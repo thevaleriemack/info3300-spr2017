@@ -6,7 +6,10 @@
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/default.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
 <style>
-body { font-family: 'Alegreya Sans', Calibri, sans-serif; }
+	body { font-family: 'Alegreya Sans', Calibri, sans-serif; }
+	svg { border: solid #ccc 1px; }
+	rect { fill: tan; stroke: black; stroke-width: 3; opacity: 0.7; }
+	path { stroke-width: 3; opacity: 0.9; }
 </style>
 </head>
 <body>
@@ -32,20 +35,22 @@ body { font-family: 'Alegreya Sans', Calibri, sans-serif; }
 	<div>
 		1. Rectangles. How does SVG understand coordinates?
 		<svg height="400" width="400">
+			<rect width="100" height="100" x="150" y="150" fill="red"></rect>
+			<rect width="100" height="100" x="100" y="150"></rect>
 		</svg>
 	</div>
 	<div>
 		2. Paths. This is the most complicated SVG element, but also one of the most useful. It contains <a href="https://www.w3.org/TR/SVG/paths.html#PathData">a tiny programming language</a>. In-class project: Make a plot like Minard's.
-		<svg height="400" width="400">
+		<svg height="400" width="600">
+			<path d="M 23 123 L 64 110 L 114 123 L 202 106 L 290 102 L 360 125 L 419 106 476  55 524  70 574  42 579  51 520  83 480 73 425 124 364 148 291 122 206 137 108 167  68 163  41 170 z" fill="#e5cbaa"></path>
+			<path d="M 40 167 L 95 166 L 147 170 L 168 176 191 163 230 184 261 178 307 158 367 146 422 125 459 104 506  82 564  96 568  57 578  51 584  61 580  63 576 100 563 108 505  94 465 112 425 131 367 150 310 162 265 182  235 191 227 190 190 166 169 178 149 172  97 169  40 171" fill="#242021"></path>
 		</svg>
-		<!-- The following numbers may be useful:
-			23 123  64 110 114 123 202 106 290 102 360 125 419 106 476  55 524  70 574  42 579  51 520  83 480 73 425 124 364 148 291 122 206 137 108 167  68 163  41 170
-			40 167  95 166 147 170 168 176 191 163 230 184 261 178 307 158 367 146 422 125 459 104 506  82 564  96 568  57 578  51 584  61 580  63 576 100 563 108 505  94 465 112 425 131 367 150 310 162 265 182  235 191 227 190 190 166 169 178 149 172  97 169  40 171
-		-->
 	</div>
 	<div>
 		3. Transformations are another useful (but a bit tricky) tool. How do we stretch, rotate, and shift elements, and how does the order of these operations affect the result?
 		<svg height="400" width="400">
+			<rect width="100" height="100" transform="scale(2) translate(150,150) rotate(60)"></rect>
+			<!--	degress, not radians		-->
 		</svg>
 	</div>
 	

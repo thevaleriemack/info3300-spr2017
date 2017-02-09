@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Val dgm97</title>
+		<style>
+			svg { border: solid #ccc 1px; }
+		</style>
+	</head>
+	<body>
+		<p id="p1">
+			<svg height="200" width="200">
+				<filter id="dropShadow" width="300%" height="300%">
+					<desc>Drop filter made for Cornell text.</desc>
+					<feOffset result="offOut" in="SourceAlpha" dx="20" dy="20" />
+					<feGaussianBlur result="blurOut" in="offOut" stdDeviation="2" />
+					<feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+				</filter>
+				<text fill="red" x="100" y="100" text-anchor="middle" alignment-baseline="middle" font-family="Palatino" filter="url(#dropShadow)">Cornell</text>
+				<circle cx="100" cy="100" r="1" fill="green"></circle>
+			</svg>
+		</p>
+		<p id="p2">
+			<svg width="200" height="200">
+				<!-- axes-->
+				<rect width="120" height="1" x="40" y="160" fill="black"></rect>
+				<rect width="1" height="120" x="40" y="40" fill="black"></rect>
+				<!-- circles
+
+1,1 is 40,160 with buffer +20,-20, so 60, 140
+2,4 is 48,224 with .05 as the multiplier
+
+-->
+				<circle cx="85" cy="151" r="5"></circle>
+				<circle cx="60" cy="140" r="5"></circle>
+				<!-- squares -->
+				<rect x="135" y="193" width="10" height="10"></rect>
+				<rect x="200" y="300" width="10" height="10"></rect>
+<!--				<path d="M 40 160 L 160 160 L 160 165 40 165 z "></path>-->
+			</svg>
+		</p>
+		<p id="p3"></p>
+		<p id="p4"></p>
+	</body>
+</html>

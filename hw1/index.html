@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <p id="p1">Problem 1:
+            <script>
+                function roll() {
+                    return Math.floor(Math.random() * 6) + 1;
+                }
+                function run10Times(fn) {
+                    var result = [];
+                    for (i=0; i<10; i++) {
+                        result.push(fn());
+                    }
+                    return result.join(', ');
+                }
+                document.getElementById('p1').innerHTML = run10Times(roll);
+            </script>
+        </p>
+        <p id="p2">Problem 2:
+            <script>
+                function diceFactory(values) {
+                    return function() {
+                        return values[(Math.floor(Math.random() * values.length-1) + 1)];
+                    }
+                }
+                var rgb = diceFactory(["red", "blue", "green"]);
+                document.getElementById('p2').innerHTML = run10Times(rgb);
+            </script>
+        </p>
+        <p id="p3">Problem 3:
+            <script>
+                function nonTransitiveFactory(dieToReturn) {
+                    var die;
+                    switch(dieToReturn) {
+                        case 0:
+                            die = [1,1,1,5,5,5];
+                            break;
+                        case 1:
+                            die = [0,0,4,4,4,4];
+                            break;
+                        case 2:
+                            die = [3,3,3,3,3,3];
+                            break;
+                        case 3:
+                            die = [2,2,2,2,6,6];
+                            break;
+                    }
+                    return function() {
+                                return die[(Math.floor(Math.random() * die.length-1) + 1)];
+                            }
+                }
+                var oneFive = nonTransitiveFactory(0);
+                document.getElementById('p3').innerHTML = run10Times(oneFive);
+            </script>
+        </p>
+        <p id="p4">Problem 4:
+            <script>
+                function rollNTimes(die1, die2, n) {
+                    var timesFirstWon = 0;
+                    for (var i=0; i<n; i++) {
+                        if (die1() > die2()) {
+                            timesFirstWon++;
+                        }
+                    }
+                    return timesFirstWon;
+                }
+                var oneFive = nonTransitiveFactory(0);
+                var zeroFour = nonTransitiveFactory(1);
+                var three = nonTransitiveFactory(2);
+                var twoSix = nonTransitiveFactory(3);
+                // can't use run10Times here because rollNTimes does not return a function
+                (function() { // self-invoking function
+                    var result = [];
+                    for (var i=0; i<10; i++) {
+                        var temp = rollNTimes(oneFive, zeroFour, 100);
+                        result.push(temp);
+                    }
+                    document.getElementById('p4').innerHTML = result.join(', ');
+                })();
+
+            </script>
+        </p>
+        <div>
+            <table>
+                <tr>
+                    <td id="cell1">hi</td>
+                    <td id="cell2">there</td>
+                    <td id="cell3">my</td>
+                    <td id="cell4">friend</td>
+                </tr>
+                <tr>
+                    <td id="cell5">my</td>
+                    <td id="cell6">friend</td>
+                    <td id="cell7">my</td>
+                    <td id="cell8">friend</td>
+                </tr>
+                <tr>
+                    <td id="cell9">my</td>
+                    <td id="cell10">friend</td>
+                    <td id="cell11">my</td>
+                    <td id="cell12">friend</td>
+                </tr>
+                <tr>
+                    <td id="cell13">my</td>
+                    <td id="cell14">friend</td>
+                    <td id="cell15">my</td>
+                    <td id="cell16">friend</td>
+                </tr>
+            </table>
+        </div>
+        <p id="p5">These are called non-transitive dice because if die 1 rolls higher than die 2 most of the time, and die 2 rolls higher than die 3 most of the time, that does not necessarily mean die 3 will roll higher than die 1 most of the time.
+            <script>
+                var dies = [oneFive, zeroFour, three, twoSix];
+                var result = [];
+                for (d1 in dies) {
+                    for (d2 in dies) {
+                        var temp = rollNTimes(dies[d1], dies[d2], 1000);
+                        result.push(temp);
+                    }
+                }
+                console.log(result);
+                for (var i=1; i < result.length+1; i++) {
+                    document.getElementById('cell'+String(i)).innerHTML = result[i-1];
+                }
+            </script>
+        </p>
+    </body>
+</html>

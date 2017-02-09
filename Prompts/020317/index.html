@@ -39,7 +39,49 @@ svg { border: solid #ccc 1px; }
 
 <script id="notes">
 // 1. How can we select elements? What is the difference between select() and selectAll()?
+    var hello = d3.select("#d1");
+    var allDivs = d3.selectAll("div");
+    allDivs.style("color", "gray");
 // 2. How can we create new elements, and set their attributes and styles?
+    var svg = d3.select("svg");
+    svg.append("circle")
+        .attr("r", 10)
+        .attr("cx", 20)
+        .attr("cy", 20)
+        .style("fill","magenta");
+    
+    for (var i = 0; i<9; i++){
+        svg.append("circle")
+        .attr("r", 10)
+        .attr("cx", 20+(20*i))
+        .attr("cy", 20+(20*i))
+        .style("fill","magenta");
+    }
+    
+    function randomX() {
+        return 200 * Math.random();
+    }
+    function randomY() {
+        return 200 * Math.random();
+    }
+    
+    for (var i = 0; i<5; i++){
+        svg.append("circle")
+        .attr("r", 10)
+        .attr("cx", randomX)
+        .attr("cy", randomY)
+        .style("fill","goldenrod");
+    }
+    
+    [5,6,7,8].forEach(function (d) {
+        console.log(d);
+    });
+    
+    d3.selectAll("circle")
+        .transition().delay(500)
+        .attr("cx",randomX) //this executes for each circle
+        .transition().delay(500)
+        .attr("cy",randomY()); //executes first then applies to each circle
 // 3. How do we update the attributes of existing elements? 
 </script>
 
