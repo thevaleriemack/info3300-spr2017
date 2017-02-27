@@ -68,7 +68,7 @@ var seasonalData, unadjustedData;
 
 // This function will be applied to all rows. Select three columns, change names, and convert strings to numbers.
 function parseLine (line) {
-	line.Date = new Date(line.Date);
+	line.Date = new Date(line.Date); // need new because Date is an object
 	line.Employment = Number(line.Employment);
 	
 	return line;
@@ -76,6 +76,7 @@ function parseLine (line) {
 
 // Some data from http://data.worldbank.org/data-catalog/country-profiles
 
+// callback function
 d3.tsv("NYSEmployment.tsv", parseLine, function (error, data) {
 	rawData = data;
 	
@@ -93,7 +94,22 @@ d3.tsv("NYSEmployment.tsv", parseLine, function (error, data) {
 });
 
 function showTrends(data) {
-	// Create or modify paths for each sector
+	// data join
+	var paths = plot.selectAll("path.lineGraph").data(data);
+	
+	paths.enter().append("path")
+	.merge(paths)
+	.on("mouseover", function (d) {
+		svg.select("#SectorName").text(d.key);
+	})
+	.attr("class", "lineGraph")
+	.transition().duration(1000)
+	.attr("d", function(sector) {
+		return pathGenerator( sector.values );
+	})
+	.style("stroke",function(sector, i) {
+		return sectorScale(i);
+	} );
 }
 
 

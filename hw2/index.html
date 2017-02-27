@@ -3,7 +3,26 @@
 	<head>
 		<title>Val dgm97</title>
 		<style>
+			body { font-family: Verdana; }
 			svg { border: solid #ccc 1px; }
+			.fourLabel {
+				fill:white;
+				font-family: Helvetica;
+				text-anchor: middle;
+				font-size: 12px;
+			}
+			.black {
+				fill:black;
+			}
+			.blue {
+				fill:blue;
+			}
+			.red {
+				fill:red;
+			}
+			.purple {
+				fill:purple;
+			}
 		</style>
 	</head>
 	<body>
@@ -21,24 +40,116 @@
 		</p>
 		<p id="p2">
 			<svg width="200" height="200">
-				<!-- axes-->
+				<!-- title -->
+				<text x="100" y="15" text-anchor="middle" alignment-baseline="middle" font-family="Helvetica" font-size="10">Title</text>
+				<!-- axes -->
 				<rect width="120" height="1" x="40" y="160" fill="black"></rect>
 				<rect width="1" height="120" x="40" y="40" fill="black"></rect>
-				<!-- circles
+				<!-- y ticks by 20-->
+				<rect width="10" height="1" x="30" y="40" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="60" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="80" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="100" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="120" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="140" fill="black"></rect>
+				<!-- x ticks by 20-->
+				<rect width="1" height="10" x="60" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="80" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="100" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="120" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="140" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="160" y="160" fill="black"></rect>
+				<!--	labels	-->
+				<text x="100" y="185" text-anchor="middle" alignment-baseline="middle" font-family="Helvetica" font-size="10">A</text>
+				<text x="15" y="100" text-anchor="middle" alignment-baseline="middle" font-family="Helvetica" font-size="10">C</text>
+<!--
+import math;
 
-1,1 is 40,160 with buffer +20,-20, so 60, 140
-2,4 is 48,224 with .05 as the multiplier
-
+def floorIt(x, width):
+  for n in x:
+      print (math.floor(
+        (float(n-min(x)) / float(max(x)-min(x)))*width
+        ))
+  
+floorIt([2,1,4,9],80);
+floorIt([4,1,15,80],80);
 -->
-				<circle cx="85" cy="151" r="5"></circle>
-				<circle cx="60" cy="140" r="5"></circle>
+				<!-- circles -->
+				<g transform="translate(60,140) scale(1,-1)">
+					<!-- replaces origin, flips -->
+					<circle cx="0" cy="0" r="5"></circle>
+					<circle cx="10" cy="3" r="5"></circle>
+				</g>
 				<!-- squares -->
-				<rect x="135" y="193" width="10" height="10"></rect>
-				<rect x="200" y="300" width="10" height="10"></rect>
-<!--				<path d="M 40 160 L 160 160 L 160 165 40 165 z "></path>-->
+				<g transform="translate(60,140) scale(1,-1) translate(-5)">
+					<!-- replaces origin, flips, offsets -->
+					<rect x="30" y="14" width="10" height="10"></rect>
+					<rect x="80" y="80" width="10" height="10"></rect>
+				</g>
 			</svg>
 		</p>
-		<p id="p3"></p>
-		<p id="p4"></p>
+		<p id="p3">
+			<svg height="200" width="300">
+<!--
+transform="translate(150) rotate(71.5)"
+-->
+				<path d="M 25 10 L 110 10 L 80 100 L 5 55 80 -10 120 60 35 95 z" fill="black" stroke="white" transform="translate(40,20) rotate(45) scale(.5)"></path>
+				<path d="M 25 10 L 110 10 L 80 100 L 5 55 80 -10 120 60 35 95 z" fill="black" stroke="white" transform="translate(130,20) rotate(45) scale(.5)"></path>
+				<path d="M 25 10 L 110 10 L 80 100 L 5 55 80 -10 120 60 35 95 z" fill="none" stroke="black" transform="translate(20,80)"></path>
+				<!-- text bubble -->
+				<ellipse cx="240" cy="40" rx="50" ry="25" stroke="black" fill="none"/>
+				<path d="M 200 80 Q 210 75 210 60" fill="none" stroke="black"></path>
+				<path d="M 200 80 Q 230 75 240 65" stroke="black"></path>
+				<text x="240" y="45" font-size="10px" text-anchor="middle">ESSE ET VIDERI</text>
+			</svg>
+		</p>
+		<p id="p4">
+			<svg height="200" width="300">
+				<!-- std dev 3.606031088 -->
+				<rect fill="yellow" opacity=".3" x="115.294117647" y="0" width="7.212062176" height="200" transform="translate(-3.606031088,0)"></rect>
+				<!-- mean -->
+				<text class="fourLabel red" x="140" y="20">Mean</text>
+				<rect fill="red" x="115.294117647" y="0" width="1" height="200"></rect>
+				<!-- median -->
+				<text class="fourLabel blue" x="70" y="35">Median</text>
+				<rect fill="blue" x="100" y="0" width="1" height="200"></rect>
+				<!-- mode -->
+				<text class="fourLabel purple" x="145" y="45">Mode</text>
+				<rect fill="purple" x="120" y="0" width="1" height="200"></rect>
+				<!-- bars -->
+				<g transform="translate(70,160) scale(1,-1)">
+					<!-- flip axes -->
+					<rect height="20" width="20" transform="translate(-60)"></rect>
+					<rect height="20" width="20" transform="translate(-40)"></rect>
+					<rect height="60" width="20" transform="translate(-20)"></rect>
+					<rect height="40" width="20"></rect>
+					<rect height="40" width="20" transform="translate(20)"></rect>
+					<rect height="100" width="20" transform="translate(40)"></rect>
+					<!-- 60,80,100 -->
+					<rect height="20" width="20" transform="translate(120)"></rect>
+					<!-- 140,160,180 -->
+					<rect height="40" width="20" transform="translate(200)"></rect>
+				</g>
+				<!-- labels -->
+				<text class="fourLabel" x="20" y="155">2</text>
+				<text class="fourLabel" x="40" y="155">3</text>
+				<text class="fourLabel" x="60" y="115">4</text>
+				<text class="fourLabel" x="80" y="135">5</text>
+				<text class="fourLabel" x="100" y="135">6</text>
+				<text class="fourLabel" x="120" y="75">7</text>
+				<text class="fourLabel black" x="140" y="175">8</text>
+				<text class="fourLabel black" x="160" y="175">9</text>
+				<text class="fourLabel black" x="180" y="175">10</text>
+				<text class="fourLabel" x="200" y="155">11</text>
+				<text class="fourLabel black" x="220" y="175">12</text>
+				<text class="fourLabel black" x="240" y="175">13</text>
+				<text class="fourLabel black" x="260" y="175">14</text>
+				<text class="fourLabel" x="280" y="135">15</text>
+			</svg>
+			<br/>Mean: 6.76470588235
+			<br/>Median: 6
+			<br/>Mode: 7
+			<br/>Probability that randomly selected data point is a 4: 0.176470588235
+		</p>
 	</body>
 </html>

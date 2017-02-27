@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<title>Val Mack dgm97</title>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<style>
+			svg { border: solid #ccc 1px; }
+		</style>
+	</head>
+	<body>
+		<p>
+			<!-- OLD
+			<svg width="200" height="200">
+
+				<text x="100" y="15" text-anchor="middle" alignment-baseline="middle" font-family="Helvetica" font-size="10">Title</text>
+
+				<rect width="120" height="1" x="40" y="160" fill="black"></rect>
+				<rect width="1" height="120" x="40" y="40" fill="black"></rect>
+
+				<rect width="10" height="1" x="30" y="40" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="60" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="80" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="100" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="120" fill="black"></rect>
+				<rect width="10" height="1" x="30" y="140" fill="black"></rect>
+
+				<rect width="1" height="10" x="60" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="80" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="100" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="120" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="140" y="160" fill="black"></rect>
+				<rect width="1" height="10" x="160" y="160" fill="black"></rect>
+
+				<text x="100" y="185" text-anchor="middle" alignment-baseline="middle" font-family="Helvetica" font-size="10">A</text>
+				<text x="15" y="100" text-anchor="middle" alignment-baseline="middle" font-family="Helvetica" font-size="10">C</text>
+
+				<g transform="translate(60,140) scale(1,-1)">
+
+					<circle cx="0" cy="0" r="5"></circle>
+					<circle cx="10" cy="3" r="5"></circle>
+				</g>
+
+				<g transform="translate(60,140) scale(1,-1) translate(-5)">
+
+					<rect x="30" y="14" width="10" height="10"></rect>
+					<rect x="80" y="80" width="10" height="10"></rect>
+				</g>
+			</svg>
+			 /OLD -->
+		</p>
+		
+		<svg height="400" width="400">
+<!--			<rect width="1" height="120" x="40" y="40" fill="red"></rect>-->
+		</svg>
+		
+		<script>
+			var svg = d3.select("svg");
+			// scales
+			var xScale = d3.scaleLinear().domain([1,9]).range([0, 120]);
+			var yScale = d3.scaleLinear().domain([80,1]).range([0, 120]);
+			// create axes
+			var xAxis = d3.axisBottom(xScale).ticks(10).tickFormat('');
+			var yAxis = d3.axisLeft(yScale).ticks(10).tickFormat('');
+			// display axes
+			var plot = svg.append("g").attr("transform", "translate(40,40)");
+			plot.append("g").call(xAxis).attr("transform", "translate(0,120)");
+			plot.append("g").call(yAxis).attr("transform", "translate(0,0)");
+			
+			var data = {
+				"circles": [{x:2, y:4}, {x:1, y:1}], "squares": [{x:4, y:15}, {x:9, y:80}]
+			};
+			
+			var circles = plot.selectAll("point").data(data["circles"]);
+			
+			circles.enter().append("circle")
+			.attr("r", 4)
+			.attr("cx", function(d) {
+				console.log(d["x"]);
+				return xScale(d["x"]);
+			})
+			.attr("cy", function(d) { return yScale(d["y"]) });
+			
+			var squares = plot.selectAll("point").data(data["squares"]);
+			
+			squares.enter().append("rect")
+			.attr("width", 4)
+			.attr("height", 4)
+			.attr("x", function(d) {
+				console.log(d["x"]);
+				return xScale(d["x"]);
+			})
+			.attr("y", function(d) { return yScale(d["y"]) });
+			
+			
+			
+			
+//			svg.append("rect").attr("width", "120").attr("height", "1").attr("x", "40").attr("y", "160");
+		</script>
+	</body>
+</html>
