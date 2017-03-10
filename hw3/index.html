@@ -54,6 +54,14 @@
 		</svg>
 		
 		<script>
+			
+			var tempfn = function(data) {
+				data = "changed data in function";
+				console.log("tempfn ran");
+				return data;
+			}
+			var tempfnres = tempfn("1");
+			
 			var svg = d3.select("svg");
 			// scales
 			var xScale = d3.scaleLinear().domain([1,9]).range([0, 120]);
