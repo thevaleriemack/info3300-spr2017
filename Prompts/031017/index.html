@@ -61,8 +61,7 @@ var model = { intercept: 0, slope: 0 };
 
 var points = [{"x":-1.2330973279191326,"y":-0.6994248342294702},{"x":1.7996387667207998,"y":1.1725462227268648},{"x":-1.3395548786759093,"y":-0.6176675455342835},{"x":-0.5800165358802124,"y":-0.7645341704142388},{"x":-2.3384514729522388,"y":-0.9678576437556518},{"x":-0.09651836507608529,"y":0.2987814878084641},{"x":-0.43080032781660527,"y":-0.45276217737047897},{"x":-2.198133135472373,"y":-1.002058273530259},{"x":-1.1146222404003339,"y":-0.536029602728414},{"x":-1.0686123793105093,"y":-0.5487531128780339}];
 
-//points.push({x: 2, y: -2});
-
+points.push({x: 2, y: -2});
 
 var circles = svg.selectAll("circle").data(points).enter()
 .append("circle")
@@ -135,9 +134,9 @@ function maxError () {
 }
 
 var lossFunction = absoluteError;
-residuals.style("stroke", "none");
+residuals.style("stroke", "blue");
 maxResidual.style("stroke", "none");
-squaredResiduals.style("fill", "none");
+squaredResiduals.style("fill", "green");
 
 var rounder = d3.format(".5g");
 
@@ -154,8 +153,10 @@ svg.on("click", function() {
 	
 	console.log(mouseXY);
 	// Figure out where the mouse is in data coordinates
-	var clickX = 0; // Replace these with useful values in data coordinates.
-	var clickY = 0; //  ...
+	var clickX = xScale.invert(mouseXY[0]); // Replace these with useful values in data coordinates.
+	// 400.90277099609375
+	var clickY = yScale.invert(mouseXY[1]); //  ...
+	// 177.4352032470703
 	
 	// Calculate a new slope
 	model.slope = clickY / clickX;
