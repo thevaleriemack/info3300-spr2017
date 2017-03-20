@@ -65,7 +65,7 @@ function generateFrom(intercept, slope, noise, n) {
 	for (var i = 0; i < n; i++) {
 		var x = normalGenerator();
 		// Fill in the noisy y value
-		var y = 0; 
+		var y = x * slope + intercept + noise * normalGenerator(); 
 		points.push({ x: x, y: y });
 	}
 	
@@ -87,13 +87,19 @@ function leastSquares(points) {
 	});
 
 	// Fill in the slope calculation
-	model.slope = 0;
+	model.slope = d3.sum(points, function(d) {
+		return (d.x - meanX) * (d.y - meanY);
+	});
+	
+	model.slope /= d3.sum(points, function(d) {
+		return (d.x - meanX) * (d.x - meanX);
+	});
 
 	model.intercept = meanY - model.slope * meanX;
 	return model;
 }
 
-var points = [];
+var points = generateFrom(0.0, 0.5, 0.1, 10);
 var model = leastSquares(points);
 
 var circles = svg.selectAll("circle").data(points).enter()

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Val Mack HW4 dgm97</title>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<script src="http://d3js.org/topojson.v2.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
+		<style>
+			svg { border: solid #ccc 1px; }
+		</style>
+	</head>
+	<body>
+		<div>Val Mack (dgm97) HW4 INFO 3300</div>
+		<div>Under fairly mild conditions, the mean of a random sample from a distribution behaves like a Gaussian random variable, even if the disitribution itself is not Gaussian.</div>
+		<p id="p1"></p>
+		<script>
+			var height = 400;
+			var width = 400;
+			var padding = 0;
+			
+			function plotHistogram(elid, arr) {
+				//create svg histogram
+				var svg = d3.select(elid).append("svg")
+				.attr("height", height + 2 * padding).attr("width", width + 2 * padding);
+				
+				var xScale = d3.scaleLinear().domain(arr).range([0, 200]);
+				var xAxis = d3.axisBottom(xScale);
+
+				svg.append("g").call(xAxis).attr("transform", "translate(20,350)");
+				
+			
+//				var xAxis = svg.append("line")
+//				.attr("x1",xScale(-3))
+//				.attr("x2",xScale(5))
+//				.attr("stroke","#ccc");
+				//construct histogram
+
+			}
+			
+
+
+			
+			var testArr = [1,5,17,31,0,4,86,3,21,2];
+			plotHistogram("#p1",testArr);
+		</script>
+	</body>
+</html>
