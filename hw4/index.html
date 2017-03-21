@@ -1,47 +1,333 @@
 <!DOCTYPE html>
 <html>
+<!-- Val Mack (dgm97) HW4 INFO 3300	-->
 	<head>
-		<title>Val Mack HW4 dgm97</title>
+		<title>Val Mack (dgm97) HW4 INFO 3300</title>
 		<script src="https://d3js.org/d3.v4.min.js"></script>
 		<script src="http://d3js.org/topojson.v2.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
 		<style>
-			svg { border: solid #ccc 1px; }
+			body {
+				width: 60%;
+				margin: 0 auto;
+				background-color: antiquewhite;
+				font-family: monospace;
+			}
+			h1 {
+				text-transform: uppercase;
+				text-align: center;
+				font-size: 1.6em;
+			}
+			p {
+				color: steelblue;
+				font-size: 1.2em;
+			}
+			svg {
+				margin: 10px 0px 40px 0px;
+				border: solid white 1px;
+			}
+			.bar rect {
+				fill: steelblue;
+			}
+			.axis {
+				stroke: cornflowerblue;
+				fill: whitesmoke;
+				stroke-width: .6;
+			}
 		</style>
 	</head>
 	<body>
-		<div>Val Mack (dgm97) HW4 INFO 3300</div>
-		<div>Under fairly mild conditions, the mean of a random sample from a distribution behaves like a Gaussian random variable, even if the disitribution itself is not Gaussian.</div>
+		<h1>Val Mack (dgm97) HW4 INFO 3300</h1>
 		<p id="p1"></p>
 		<script>
 			var height = 400;
 			var width = 400;
-			var padding = 0;
+			var padding = 40;
 			
 			function plotHistogram(elid, arr) {
-				//create svg histogram
+				// create svg
 				var svg = d3.select(elid).append("svg")
-				.attr("height", height + 2 * padding).attr("width", width + 2 * padding);
-				
-				var xScale = d3.scaleLinear().domain(arr).range([0, 200]);
+				.attr("height", height + 2 * padding).attr("width", width + 2 * padding)
+				.append("g").attr("transform", "translate(" + padding + "," + padding + ")");
+				// x scale
+				var arrMax = d3.max(arr);
+				var arrMin = d3.min(arr);
+				var xScale = d3.scaleLinear()
+				.domain([arrMin, arrMax]).range([0, width]);
+				// construct histogram
+				var bins = d3.histogram()
+				.domain(xScale.domain())
+				.thresholds(xScale.ticks(20))
+				(arr);
+				// y scale
+				var yScale = d3.scaleLinear()
+				.domain([0, d3.max(bins, function(d) {return d.length; })])
+				.range([height, 0]);
+				// add bars
+				var bar = d3.select(elid).select("g").selectAll(".bar")
+				.data(bins)
+				.enter().append("g")
+				.attr("class", "bar")
+				.attr("transform", function(d) { return "translate(" + xScale(d.x0) + "," + yScale(d.length) + ")"; });
+				// rect for each bar
+				bar.append("rect")
+				.attr("x", 1)
+				.attr("width", width/bins.length)
+				.attr("height", function(d) { return height - yScale(d.length); });
+				// axes
 				var xAxis = d3.axisBottom(xScale);
-
-				svg.append("g").call(xAxis).attr("transform", "translate(20,350)");
-				
+				svg.append("g")
+				.call(xAxis)
+				.attr("transform", "translate(0, 400)")
+				.attr("class", "axis");
+				var yAxis = d3.axisLeft(yScale);
+				svg.append("g")
+				.call(yAxis)
+				.attr("class", "axis")
+				.attr("transform", "translate(0,0)");
+			};
 			
-//				var xAxis = svg.append("line")
-//				.attr("x1",xScale(-3))
-//				.attr("x2",xScale(5))
-//				.attr("stroke","#ccc");
-				//construct histogram
-
+		</script>
+		
+		<p id="p2"><caption>P2</caption><br/></p>
+		<script>
+			// generate function called gaussian
+			var gaussian = d3.randomNormal(0.0, 1.0);
+			
+			// create function
+			function gaussian1000(){
+				var arr1000 = [];
+				for(i = 0; i < 1000; i++){
+					arr1000.push(gaussian());
+				}
+				return arr1000;
+			}
+			// sample and plot
+			var sample = gaussian1000();
+			plotHistogram("#p2", sample);
+		</script>
+		
+		<p id="p3">
+			<caption>P3</caption><br/>
+			<b>Comparisons:</b><br/>
+			P2 - Roughly the same shape as the histogram in P2 above. X-axis shows a smaller range, but both look like normal distributions with data points accumulating close to 0. The mean we specified for the randomly generated data points was 0, therefore it is no surprise that most of the points will be close to 0 in P2, making most of the means also close to 0 here.<br/>
+		</p>
+		<script>
+			var means = [];
+			for(i3 = 0; i3 < 1000; i3++){
+				means.push(d3.mean(gaussian1000()));
+			}
+			console.log(means.length);
+			plotHistogram("#p3", means);
+		</script>
+		
+		<p id="p4">
+			<caption>P4</caption><br/>
+		</p>
+		<script>
+			function lognormal1000() {
+				var logSamples = [];
+				for(i4 = 0; i4 < 1000; i4++){
+					logSamples.push(Math.exp(gaussian()));
+				}
+				return logSamples;
+			}
+			plotHistogram("#p4", lognormal1000());
+		</script>
+		
+		<p id="p5">
+			<caption>P5</caption><br/>
+			<b>Comparisons:</b><br/>
+			P2 - Roughly the same shape. Major difference is in the range of x values, which is smaller here than in P2. This is expected because the distribution is based on the lognormal used in P4, where most of the data falls between 1 and 2 inclusive. Another difference is the distribution is centered between 1 and 2, which is no surprise given the data from P4.<br/>
+			P3 - Roughly the same shape. Same reasons as described above.<br/>
+			P4 - Very different shape. P5 looks normal, but P4 looks Poissonian.<br/>
+		</p>
+		<script>
+			var logMeans = [];
+			for(i5 = 0; i5 < 1000; i5++){
+				logMeans.push(d3.mean(lognormal1000()));
+			}
+			plotHistogram("#p5", logMeans);
+		</script>
+		
+		<p id="p6"><caption>P6</caption><br/></p>
+		<script>	
+			function exponential1000() {
+				var expArr = [];
+				for(i6 = 0; i6 < 1000; i6++) {
+					expArr.push(-Math.log(Math.random()));
+				}
+				return expArr;
+			}
+			plotHistogram("#p6", exponential1000());
+		</script>
+		
+		<p id="p7"><caption>P7</caption><br/>
+			<b>Comparisons:</b><br/>
+			P2 - Roughly the same shape. Major difference is in the range of x values, which is smaller here than in P2. Another difference is the distribution is centered on 1 rather than 0 in P2. This is no surprise given most of the data in P6 falls within the range of 0 to 2.<br/>
+			P3 - Roughly the same shape. Roughly the same range of x values, but centered around 1 rather than 0.<br/>
+			P4 - Very different shape. P7 looks normal, but P4 looks Poissonian.<br/>
+			P5 - Similar shape. Similar in range for x values, though P7 appears to have a slightly smaller range. This plot is also different because most of the data points fell into bins around 1, whereas P5 had most of the data around 1.65.<br/>
+			P6 - Similar differences as with P4.<br/>
+		</p>
+		<script>
+			var expMeans = [];
+			for(i7 = 0; i7 < 1000; i7++) {
+				expMeans.push(d3.mean(exponential1000()));
+			}
+			plotHistogram("#p7", expMeans);
+		</script>
+		
+		<p id="p8"><caption>P8</caption><br/></p>
+		<script>
+			var alpha = 10;
+			
+			function gammaDistribution() {
+				var alphaArr = [];
+				for (n8 = 0; n8 < alpha; n8++) {
+					alphaArr.push(-Math.log(Math.random()));
+				}
+				return d3.sum(alphaArr);
 			}
 			
-
-
+			function gamma1000() {
+				var gammaArr = [];
+				for (i8 = 0; i8 < 1000; i8++) {
+					gammaArr.push(gammaDistribution());
+				}
+				return gammaArr;
+			}
+			plotHistogram("#p8", gamma1000());
+		</script>
+		
+		<p id="p9"><caption>P9</caption><br/>
+			<b>Comparisons:</b><br/>
+			P2 - Roughly the same shape. Major difference is in the range of x values, which is smaller here than in P2. Another difference is the distribution is centered on 10 rather than 0 in P2.<br/>
+			P3 - Roughly the same shape. P9 has a larger range in x values and it is centered around 10 where P3 is centered around 0.<br/>
+			P4 - Very different shape. P7 looks normal, but P9 looks Poissonian.<br/>
+			P5 - Similar shape. Similar in range for x values. Major difference is that most of P5's data falls around 1.65, and most of the data here falls around 10.<br/>
+			P6 - Similar differences as with P4.<br/>
+			P7 - Similar in overall shape, slighlty smaller range of x values, and this is centered around 10 rather than 1 in P7.<br/>
+			P8 - Similar in overall shape to P8, but the distribution is more center aligned with the x-axis than P8, which had the majority of its data closer to the origin. The range of x values here is much smaller, but both plots have their data clustered around 10.<br/>
+		</p>
+		<script>
+			var gammaMeans = [];
+			for (i9 = 0; i9 < 1000; i9++) {
+				gammaMeans.push(d3.mean(gamma1000()));
+			}
+			plotHistogram("#p9", gammaMeans);
+		</script>
+		
+		<p id="p10"><caption>P10</caption><br/></p>
+		<script>
+			function cauchy1000() {
+				var cauchyArr = [];
+				for (i10 = 0; i10 < 1000; i10++) {
+					cauchyArr.push(gaussian() / gaussian());
+				}
+				return cauchyArr;
+			}
+			plotHistogram("#p10", cauchy1000());
+		</script>
+		
+		<p id="p11"><caption>P11</caption><br/>
+			<b>Comparisons:</b><br/>
+			Completely different from histograms 1-9. Shape is extremely narrow, with most of the data close to 0, but the range of x values is much larger in range than the other plots, going from about -400 to 1000 in one case. Regenerating this plot multiple times, the values of the x axis change dramatically between instances, showing no consistency between samples.<br/>
+			P10 - Very similar in shape, also has a very wide range for x values, also has majority of data close to 0, and also lacks consistency between samples.<br/>
+		</p>
+		<script>
+			var cauchyMeans = [];
+			for (i11 = 0; i11 < 1000; i11++) {
+				cauchyMeans.push(d3.mean(cauchy1000()));
+			}
+			plotHistogram("#p11", cauchyMeans);
+		</script>
+		
+		<p id="p12">
+			<caption>P12</caption><br/>
+			Use the sliders below to view the visualization.<br/>
+			<svg height="500" width="500"></svg>
+		</p>
+		<script>
+			// create scales
+			var saturationScale = d3.scaleLinear()
+			.domain([0,100]).range([40,440]);
+			var lightnessScale = d3.scaleLinear()
+			.domain([0,100]).range([40,440]);
+			// positions for circles
+			var circles = [];
+			for (var row=0; row < 11; row++) {
+					for (var col=0; col < 11; col++){
+						circles.push({
+							"saturation":col*10,
+							"lightness":row*10
+						})
+					}
+				}
 			
-			var testArr = [1,5,17,31,0,4,86,3,21,2];
-			plotHistogram("#p1",testArr);
+			function showCircles(hue, opacity) {
+				// add the circles
+				var g12 = d3.select("#p12").select("svg").append("g");
+				g12.attr("transform", "translate(10,10)")
+				.selectAll("circle")
+				.data(circles).enter().append("circle")
+				.style("stroke", "#eee")
+				.style("fill", function (d) {
+					return d3.hsl(hue, d.saturation/100, d.lightness/100);
+				})
+				.attr("r", 20)
+				.attr("cx", function(d) {
+					return saturationScale(d.saturation)
+				})
+				.attr("cy", function(d) {
+					return lightnessScale(d.lightness)
+				})
+				.attr("opacity", opacity);
+			}
+			
+			var p12 = d3.select("#p12");
+			
+			//sliders
+			p12.append("h4")
+			.text("Hue Slider");
+			p12.append("input")
+			.attr("type","range")
+			.attr("id","hueSlider")
+			.attr("min","0")
+			.attr("max","360")
+			.attr("value","0");
+			
+			p12.append("h4")
+			.text("Opacity Slider");
+			p12.append("input")
+			.attr("type","range")
+			.attr("id","opacitySlider")
+			.attr("min","0")
+			.attr("max","1")
+			.attr("value","0")
+			.attr("step","0.1");
+			
+			function currentOpacity() {
+				return d3.select("#opacitySlider").property("value");
+			}
+			function currentHue() {
+				return d3.select("#hueSlider").property("value");
+			}
+			
+			// event handlers
+			d3.select("#hueSlider")
+			.on("input", function(d) {
+				p12.select("svg").select("g").remove();
+				showCircles(this.value, currentOpacity());
+			});
+			
+			d3.select("#opacitySlider")
+			.on("input", function(d) {
+				p12.select("svg").select("g").remove();
+				console.log(this.value);
+				showCircles(currentHue(), this.value);
+			});
+			
 		</script>
 	</body>
 </html>
