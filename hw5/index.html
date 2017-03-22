@@ -1,0 +1,57 @@
+<!DOCTYPE>
+<html>
+<!-- Val Mack (dgm97) INFO3300 HW5 -->
+	<head>
+	</head>
+	<body>
+		<p id="p1">
+			<svg></svg>
+		</p>
+		<script>
+			// notice gunownership.txt has 54 states
+			// incl. guam, district of columbia, virgin islands, and puerto rico
+			
+			var svg = d3.select("svg");
+			
+			var projection = d3.geoAlbersUsa().scale(75);
+			var pathGenerator = d3.geoPath().projection(projection);
+			
+			// load data
+			var counties, states;
+			var usdaAtlas;
+
+			// function to handle any row-by-row processing on CSV
+			var parseRow = function(row) {
+				row.FIPS = Number(row.FIPS);
+				return row;
+			}
+			
+			// parser
+			var csvParser = d3.dsvFormat(",");
+			d3.request("gunownership.txt");
+			
+			d3.queue()
+			.defer(d3.json, "us.json")
+			.defer(d3.csv, "gunownership.txt", parseRow)
+			.await(function (error, rawMap, rawData) {
+
+				console.log("Code in the call-back function is only executed when every data file loads.");
+
+				counties = topojson.feature(rawMap, rawMap.objects.counties);
+				states = topojson.feature(rawMap, rawMap.objects.states);
+
+				usdaAtlas = d3.map(rawAtlas, function (d) {
+					return d.FIPS;
+				});
+
+				showMap();
+			});
+			
+			function showMap() {
+				projection.fitExtent([[0,0], [svg.attr("width"), svg.attr("height")]], counties);
+				pathGenerator = d3.usaAlbers().projection(projection);
+			}
+			
+		</script>
+	</body>
+</html>
