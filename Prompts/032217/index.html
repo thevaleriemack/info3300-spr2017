@@ -186,6 +186,7 @@ function calculateGradient(points, model) {
 	points.forEach(function (point) {
 		inputVariables.forEach(function (variable) {
 			// What goes here?
+			gradient[variable] += point[variable] * point.error / points.length;
 		});
 	});
 	
@@ -195,6 +196,7 @@ function calculateGradient(points, model) {
 function updateModel(model, gradient, learningRate) {
 	inputVariables.forEach(function (variable) {
 		// What goes here?
+		model[variable] += learningRate * gradient[variable];
 	});
 	display();
 }
