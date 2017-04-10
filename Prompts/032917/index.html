@@ -72,7 +72,7 @@ function makeClusters(numClusters, pointsPerCluster, spread) {
 	var points = [];
 	
 	for (var clusterID = 0; clusterID < numClusters; clusterID++) {
-		var center = { x: seededRandom(), y: seededRandom() };
+		var center = { x: 0.2 + clusterID * .02, y: seededRandom() };
 
 		// Place a blurry indication of where the cluster "should" be.
 		svg.append("circle")
@@ -96,7 +96,7 @@ function makeClusters(numClusters, pointsPerCluster, spread) {
 	return points;
 }
 
-var points = makeClusters(3, 10, 0.1);
+var points = makeClusters(5, 40, .1);
 
 circles = svg.selectAll(".point").data(points);
 
@@ -133,8 +133,22 @@ function moveMeans() {
 		var assignedPoints = 
 			points.filter(function (point) { return point.cluster == i; });
 		
-		// How do we update the centroids if we know how 
-		//  they relate to data points?
+		if (assignedPoints.length == 0) {
+			var randomPoint = points[Math.floor(Math.random() * points.length)];
+			centroid.x = randomPoint.x;
+			centroid.y = randomPoint.y;
+			
+		} else {
+			
+			centroid.x = d3.mean(assignedPoints, function(d) {
+			return d.x;
+				
+		});
+			// use of arrow functions
+		centroid.y = d3.mean(assignedPoints, d => d.y);
+			
+		}
+		
 	});
 	
 	lines.transition().duration(1000).attr("x2", function (point) {

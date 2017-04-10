@@ -2,23 +2,72 @@
 <html>
 <!-- Val Mack (dgm97) INFO3300 HW5 -->
 	<head>
+		<title>Val Mack dgm97 HW5</title>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<script src="http://d3js.org/topojson.v2.min.js"></script>
+		<style>
+			svg { border: solid #ccc 1px; }
+			path.country { fill: #ccc; stroke: #888;; }
+		</style>
 	</head>
 	<body>
 		<p id="p1">
-			<svg></svg>
+			Gun Ownership
+			<svg height="600" width="600"></svg>
+		</p>
+		<p id="p2">
+			Population Density
+			<svg height="600" width="600"></svg>
+			<span>The D3 quantize scale rounds continuous data to a fixed set of discrete values. Because the density values for each state are so varied, without using a log scale the domain input into the quantize scale has a larger range than that of the range that is output from the scale. The result is that the map is entirely one color. When using the log of the values, the inputs into the scale are much closer together, and the difference between the minimum input and maximum is fewer than the number of values use for the range (10), meaning that the quantize scale categorizes the values such that distinctions can be easily seen.</span>
+		</p>
+		<p id="p3">
+			<svg height="600" width="700"></svg>
+			<span>
+				<br/>
+				Slope of blue line: -7.831126151620499<br/>
+				Intercept of blue line: 72.50648595649389
+				<br/>
+				Log density is a fairly good predictor of gun ownership. Based on the data, less dense sates have higher gun ownership, and this pattern is fairly consistent across states. There are some outliers like Hawaii, which one might expect to have higher gun ownership given its density, or New Mexico which one might expect to have a more dense population given its gun ownership, but overally the outliers are not far from the general trend.
+				<br/>
+				Compared to the map this pattern is not very surprising because it shows that most states have higher densities that are close together, but a few outliers have very low density. This is not obvious unless you understand how the log of the values changes the display. There is nothing surprising about the y-axis here for the states because it shows a range of values, just as there are a range of colors on the map. <br/> The major difference is that the scatterplot appears linear at first, and the map clearly shows outliers, whereas the scatterplot makes them less obvious by using the log scale.
+				<br/>
+				The red and blue lines are not the same because one is taking into account the log of the values for the slope and the other is not. They would be the same if the red line had the log data as a part of its slope calculation.
+				<br/> Pearson r: r = -0.8217
+				<br/> This is very close to the slopes calculated and supports the hypothesis that there does exist a relationship between the two dimensions.
+			</span>
 		</p>
 		<script>
 			// notice gunownership.txt has 54 states
 			// incl. guam, district of columbia, virgin islands, and puerto rico
 			
-			var svg = d3.select("svg");
+			var svg1 = d3.select("#p1 svg");
+			var svg2 = d3.select("#p2 svg");
+			var svg3 = d3.select("#p3 svg").append("g");
+			
+			svg3.attr("transform", "translate(40,0)");
 			
 			var projection = d3.geoAlbersUsa().scale(75);
 			var pathGenerator = d3.geoPath().projection(projection);
 			
+			// color scales
+			var saturationScale = d3.scaleLinear()
+			.domain([0,9]).range([0,1]);
+			var lightnessScale = d3.scaleLinear()
+			.domain([0,9]).range([0,1]);
+			
+			function colorCreator() {
+				arr = [];
+				for (var i=0; i<10; i++) {
+					arr.push(d3.hsl(310, saturationScale(i), lightnessScale(i)));
+				}
+				return arr;
+			}
+			
+			var colorRange = colorCreator();
+			
 			// load data
 			var counties, states;
-			var usdaAtlas;
+			var gunMap;
 
 			// function to handle any row-by-row processing on CSV
 			var parseRow = function(row) {
@@ -26,9 +75,7 @@
 				return row;
 			}
 			
-			// parser
-			var csvParser = d3.dsvFormat(",");
-			d3.request("gunownership.txt");
+			// load asynchronously
 			
 			d3.queue()
 			.defer(d3.json, "us.json")
@@ -40,18 +87,223 @@
 				counties = topojson.feature(rawMap, rawMap.objects.counties);
 				states = topojson.feature(rawMap, rawMap.objects.states);
 
-				usdaAtlas = d3.map(rawAtlas, function (d) {
+				gunMap = d3.map(rawData, function (d) {
 					return d.FIPS;
 				});
-
-				showMap();
+				
+				var ownershipScale = d3.scaleQuantize().domain(d3.extent(gunMap.values(), d => parseFloat(d.Ownership))).range(colorRange);
+				
+				var densityScale = d3.scaleQuantize().domain([0, 
+					d3.max(gunMap.values(), d => Math.log(parseFloat(d.Density)))
+				]).range(colorRange);
+				
+				showMap(ownershipScale, "Ownership");
+				showLogMap(densityScale, "Density");
+				showScatter();
 			});
 			
-			function showMap() {
-				projection.fitExtent([[0,0], [svg.attr("width"), svg.attr("height")]], counties);
-				pathGenerator = d3.usaAlbers().projection(projection);
+			function showMap(scale, variable) {
+				projection.fitExtent([[0,0], [svg1.attr("width"), svg1.attr("height")]], counties);
+				pathGenerator = d3.geoPath().projection(projection);
+				
+				var paths = svg1.selectAll("path.country").data(states.features);
+				paths.enter().append("path").attr("class", "country")
+				.on("click", function (d) { console.log(d.id); })
+				.merge(paths)
+				.style("fill", function (state) {
+					var stateData = gunMap.get(state.id);
+					if (stateData) {
+						return scale(parseFloat(stateData[variable]));
+					}
+				})
+				.attr("d", function (state){
+					return pathGenerator(state)
+				});
 			}
 			
+			function showLogMap(scale, variable) {
+				projection.fitExtent([[0,0], [svg2.attr("width"), svg2.attr("height")]], counties);
+				
+				pathGenerator = d3.geoPath().projection(projection);
+				
+				var paths = svg2.selectAll("path.country").data(states.features);
+				paths.enter().append("path").attr("class", "country")
+				.on("click", function (d) { console.log(d.id); })
+				.merge(paths)
+				.style("fill", function (state) {
+					var stateData = gunMap.get(state.id);
+					if (stateData) {
+						return scale(parseFloat(stateData[variable]));
+					}
+				})
+				.attr("d", function (state){
+					return pathGenerator(state)
+				});
+			}
+			
+			// Calculate the optimal slope and intercept.
+			function leastSquares(points) {
+				var model = { intercept: 0, slope: 0 };
+
+				if (points.length == 0) { return model; }
+
+				var meanX = d3.mean(points, function (d) { 
+					return d.x;
+				});
+
+				var meanY = d3.mean(points, function (d) { 
+					return d.y;
+				});
+
+				model.slope = d3.sum(points, function (d) {
+					return (d.x - meanX) * (d.y - meanY);
+				});
+				model.slope /= d3.sum(points, function (d) {
+					return (d.x - meanX) * (d.x - meanX);
+				});
+
+				model.intercept = meanY - model.slope * meanX;
+				return model;
+			}
+			
+			function reverseLeastSquares(points) {
+				var model = { intercept: 0, slope: 0 };
+
+				if (points.length == 0) { return model; }
+
+				var meanX = d3.mean(points, function (d) { 
+					return d.y;
+				});
+
+				var meanY = d3.mean(points, function (d) { 
+					return d.x;
+				});
+
+				model.slope = d3.sum(points, function (d) {
+					return (d.y - meanY) * (d.x - meanX);
+				});
+				model.slope /= d3.sum(points, function (d) {
+					return (d.y - meanY) * (d.y - meanY);
+				});
+
+				model.intercept = meanX - model.slope * meanY;
+				return model;
+			}
+			
+			function showScatter() {
+				// compare log pop density on x
+				// reported gun ownership on y
+				
+				var xScale = d3.scaleLinear().domain([0, d3.max(gunMap.values(), d => Math.log(parseFloat(d.Density)))]).range([0, 500]);
+				var yScale = d3.scaleLinear().domain(d3.extent(gunMap.values(), d => parseFloat(d.Ownership))).range([500, 0]);
+				
+				// axes
+				var xAxis = d3.axisBottom(xScale);
+				svg3.append("g")
+				.call(xAxis)
+				.attr("transform", "translate(40, 520)")
+				.attr("class", "axis");
+				var yAxis = d3.axisLeft(yScale);
+				svg3.append("g")
+				.call(yAxis)
+				.attr("class", "axis")
+				.attr("transform", "translate(40,20)");
+				
+				svg3.append("text")
+				.attr("x", 250)
+				.attr("y", 560)
+				.text("Log Population Density");
+				svg3.append("text")
+				.attr("x", -350)
+				.attr("y", 0)
+				.attr("transform", "rotate(-90)")
+				.text("Reported Gun Ownership");
+				
+				var circles = svg3.selectAll("circle").data(states.features);
+				
+				circles.enter().append("circle")
+				.attr("r", 5)
+				.style("opacity", 0.7)
+				.merge(circles)
+				.attr("transform", "translate(25,5)")
+				.attr("cx", function (state) {
+					var stateData = gunMap.get(state.id);
+					if (stateData) {
+						return xScale(Math.log(parseFloat(stateData["Density"])));
+					}
+				})
+				.attr("cy", function (state) {
+					var stateData = gunMap.get(state.id);
+					if (stateData) {
+						return yScale(parseFloat(stateData["Ownership"]));
+					}
+				});
+				
+				circles.enter().append("text")
+				.attr("dx", function (state) {
+					var stateData = gunMap.get(state.id);
+					if (stateData) {
+						return xScale(Math.log(parseFloat(stateData["Density"])));
+					}
+				})
+				.attr("dy", function (state) {
+					var stateData = gunMap.get(state.id);
+					if (stateData) {
+						return yScale(parseFloat(stateData["Ownership"]));
+					}
+				})
+				.attr("transform", "translate(50,20)")
+				.style("font-size", 10)
+				.text(function (state) {
+					var stateData = gunMap.get(state.id);
+					if (stateData) {
+						return stateData["State"];
+					}
+				});
+				
+				var points = [];
+				gunMap.values().forEach(function(d){
+					points.push({ x: Math.log(parseFloat(d.Density)), y: parseFloat(d.Ownership)});
+				});
+				
+				var xs = [];
+				var ys = [];
+				points.forEach(function(d) {
+					xs.push(d.x);
+					ys.push(d.y);
+				});
+				
+				console.log(xs);
+				console.log(ys);
+				
+				
+				var model = leastSquares(points);
+				var temp = d3.max(gunMap.values(), d => Math.log(parseFloat(d.Density)));
+				
+				var modelReverse = reverseLeastSquares(points);
+				
+				
+				console.log(model.slope);
+				console.log(model.intercept);
+				
+				var regressionLine = svg3.append("line")
+				.attr("class", "estimated")
+				.attr("transform", "translate(140,20)")
+				.attr("x1", xScale(0))
+				.attr("y1", yScale(model.slope * 0 + model.intercept))
+				.attr("x2", xScale(temp))
+				.attr("y2", yScale(model.slope * (temp)))
+				.style("stroke", "blue");
+				
+				var reverseLine = svg3.append("line")
+				.attr("class", "reverseestimate")
+				.attr("transform", "translate(140,20)")
+				.attr("x1", xScale(0))
+				.attr("y1", yScale(modelReverse.slope * 0 + modelReverse.intercept))
+				.attr("x2", xScale(temp))
+				.attr("y2", yScale(modelReverse.slope * (temp)))
+				.style("stroke", "red");
+			}
 		</script>
 	</body>
 </html>
