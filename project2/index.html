@@ -1,10 +1,15 @@
 <html>
 <head>
-	<title>Startup Data Visualization - Angela Hu, Val Mack, Rong Wu</title>
+	<title>Startup Data Visualization - Angela Wu, Val Mack, Rong Hu</title>
 	<link rel="stylesheet" href="main.css"/>
+	<link rel="stylesheet" href="fig2.css"/>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+	<script src="uStates.js"></script>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 	<script src="http://d3js.org/topojson.v2.min.js"></script>
+	<script src="sankey.js"></script>
+	
 	<script
   src="https://code.jquery.com/jquery-3.2.1.min.js"
   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -12,30 +17,491 @@
 </head>
 <body>
 	<div class="intro">
-		<h1>Startups 2017</h1>
+		<h1>US Startups 2017</h1>
+		<p>INFO 5100 Project 2 <br>Angela Wu, Rong Hu and Val Mack</p>
 		<hr/>
 	</div>
 	<div class="main">
+		<div class="fig1">
+			<div class="info">
+				<h3>Location, Fund &amp; Market </h3>
+				<div>Key Markets:<br/>
+				<select id="select-list">
+				  <option value="v1">E-Commerce</option> 
+				  <option value="v2">Education</option>
+				  <option value="v3">Enterprise Software</option>
+				  <option value="v4">Game</option>
+				</select>
+				</div>
+				<h4>Startups at California and New York raise at least 70% of funding in each key market. Most of the funding of these two states are given to Enterprise Software market. Game startups are centered in a small number of states while other markets are more widely spread across US. </h4>
+				<p>The map shows the location and fund distributions of the top 100 statups in the specific key market. The colors represent the total fund that the startups raise. The pie graph shows the funding distributions among key markets in each state.<br><br></p>	
+				<svg width="200" height="200" viewBox="0 0 200 200" id="fig1c"></svg>		
+			</div>
+			<div id="tooltip"></div><!-- div to hold tooltip. -->
+			<svg width="75%" height="700" viewBox="0 0 960 600" id="fig1">
+			</svg>	
+		</div>
+		
+		<div id="fig2">
+			<div class="info">
+				<h3>Startup Talent Sources</h3>
+				<div>Team From:<br/>
+				<select id="select">
+				  <option value="0">Top Universities</option> 
+				  <option value="1">Top Companies</option>
+				</select>
+				</div>
+				<h4>Over 70% of startups have funding less than 10 million.<br><br>
+				    Top Startup talent sources: UC Berkeley, Standford University, Google, and Microsoft.  </h4>
+				<p>The graph shows the number of startups with team members from a certain top university or major company and the composition of total startups in terms of total money raised.</p> 
+				<p>The <span>height</span> of each rectangle represents the number of startups.</p>
+				<p>Universities are classified into two categories: east and west coasts, and companies are grouped into three industries. Each category is represented with different <span>colors</span>.</p>
+				<p><span>Hover</span> to see all details.</p>
+			</div>
+			<div id="title"></div>
+			<svg id="university" width="75%" height="900" viewBox="0 0 960 900"></svg>
+		</div>
+		
 		<div class="fig3">
 			<div class="info">
-				<h3>SIZE</h3>
-				<h4>The majority of startups have at most 200 employees.</h4>
-				<p>Companies listed for each circle have at most <i>n</i> employees, where <i>n</i> is the number that appears when you hover over a circle. The radius of each circle represents the relative difference in company size between groups of companies. The width of each circumference is the relative amount of companies with <i>n</i> employees.</p>
+				<h3>Size by Employees</h3>
+				<h4>The majority of startups have between 50 and 500 employees.</h4>
+				<p>Companies listed for each circle have approximately <i>n</i> employees, where <i>n</i> is the number range that appears when you <b>hover over a circle</b>. The radius of each circle represents the relative difference in company size between groups of companies. Difference in color saturation compares the amount of companies within each group.</p>
 			</div>
 			<svg id="fig3"></svg>
 		</div>
 	</div>
+	
+	<div class="outro">
+		<hr/>
+		<p>The data for this website was collected from https://angel.co/companies</p>
+	</div>
+	
 	<script>
 		// globals
 		var width = "75%";
-		var height = "500";
+		var height = "650";
 		var backgroundColor = "#f5f5f5";
 		
-		// scales
-		var employeesScale = d3.scaleSqrt().domain([0, 5000]).range([20, 400]);
-		var companiesScale = d3.scaleLinear().domain([0, 53]).range([.2, 24]);
+
+		/* BEGIN FIGURE 1 */
+		//http://htmlcolorcodes.com/
+		var colors = [["#EBF5FB", "#AED6F1", "#21618C", "#1B4F72"], ["#EAFAF1", "#ABEBC6", "#1D8348", "#186A3B"], ["#FEF9E7", "#F9E79F", "#9A7D0A", "#7D6608"], ["#FDEDEC", "#F5B7B1", "#943126", "#78281F"]];
+		var indData = ["ec.csv", "edu.csv", "es.csv", "game.csv"];
+		var isFirst = true;
+
+		var data = getData(0);
+
+		d3.select("#select-list").on("change", function(){
+			var selectedIndex = d3.event.target.selectedIndex;
+
+			data = getData(selectedIndex);
+		});
+
+		function getData(k) {
+			d3.csv(indData[k], function (error, rawData) {
+				d3.csv("market.csv", function(error, data) {
+			if (error) { console.log(error); }
+
+			var temp = rawData;
+			var data = data;
+			var sampleData ={};
+
+			var maxRevenue = d3.max(temp, function(d){return +d.Revenue;});
+
+			var secondRevenue = d3.max(temp, function(d){
+				if (+d.Revenue !=  maxRevenue) {
+					return +d.Revenue;
+				} else return 0;
+			});
+
+			var findColor = function(revenue) {
+				if (revenue == 0) {
+					return colors[k][0];
+				} else if (revenue == maxRevenue) {
+					return colors[k][3];
+				} else {
+					return d3.interpolate(colors[k][1], colors[k][2])(revenue/secondRevenue); 
+				} 
+			}
+
+			temp.forEach(function(d){ 
+				var count=+d.Count, 
+					revenue=+d.Revenue;
+				sampleData[d.State]={count:count, revenue:revenue, color: findColor(revenue)}	
+			});
+
+			if (isFirst) {
+				uStates.draw("#fig1", sampleData, tooltipHtml);
+				isFirst = false;
+				mousefunc();
+			} else {
+				mousefunc();
+			}
+
+			function mousefunc() {
+				d3.select("#fig1").selectAll(".state").style("fill",function(d){ return sampleData[d.id].color; }).on("mouseover", mouseOver);
+
+			    function mouseOver(d){
+				d3.select("#tooltip").transition().duration(200).style("opacity", .9);      
+				
+				d3.select("#tooltip").html(tooltipHtml(d.n, sampleData[d.id]))  
+					.style("left", (d3.event.pageX) + "px")     
+					.style("top", (d3.event.pageY - 28) + "px");
+
+				drawCircle(d.id);
+		        } 
+			}
+
+			var drawCircle = function(state) {
+
+				var width = 200,
+				    height = 200,
+				    radius = Math.min(width, height) / 2;
+
+				var color = ["#5DADE2", "#58D68D", "#F4D03F", "#EC7063"];
+
+				var arc = d3.arc()
+				    .outerRadius(radius - 10)
+				    .innerRadius(radius - 70);
+
+				var pie = d3.pie()
+				    .sort(null)
+				    .value(function(d) { return +d[state]; });
+
+				var svg = d3.select("#fig1c");
+				svg.selectAll("*").remove();
+
+				var svg = d3.select("#fig1c").append("svg")
+				    .attr("width", width)
+				    .attr("height", height)
+				    .append("g")
+				    .attr("transform", "translate(" + width / 2 + "," + (height + 10) / 2 + ")");
+
+				var name = function(d) {
+					if (d.data[state] == 0) return "";
+					return d.data.State;
+				}
+
+				  var g = svg.selectAll(".arc")
+				      .data(pie(data))
+				      .enter().append("g")
+				      .attr("class", "arc");
+
+				  g.append("path")
+				      .attr("d", arc)
+				      .style("fill", function(d, i) { return color[i]; });
+
+				  svg.append("text")
+			        .attr("x", 0)             
+			        .attr("y", -95)
+			        .attr("text-anchor", "middle")  
+			        .style("font-size", "12px") 
+			        .text("Funding distribution of " + state);
+
+				  g.append("text")
+				      .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+				      .attr("dy", ".35em")
+				      .style("font-size", "9px")
+				      .text(function(d) { 
+				      	return name(d); 
+				      });
+				}
+			});
+			});
+		}
+
+		function tooltipHtml(n, d){	/* function to create html content string in tooltip div. */
+			if (d.revenue == 0) {
+				return "<h4>"+n+"</h4><table>"+
+				"<tr><td>Count</td><td>"+(d.count)+"</td></tr>"+
+				"<tr><td>Funding</td><td>"+("$"+(0))+"</td></tr>"
+				"</table>";
+			} else {
+				return "<h4>"+n+"</h4><table>"+
+				"<tr><td>Count</td><td>"+(d.count)+"</td></tr>"+
+				"<tr><td>Funding</td><td>"+("$"+(d.revenue/1000000).toFixed(0)+"M")+"</td></tr>"
+				"</table>";
+			}
+		}
+
+		/*BEGIN FIGURE 2 */
+		/*D3 Sankey plugin
+		credit: https://github.com/d3/d3-sankey*/
+		var margin = {top: 150, right: 70, bottom: 50, left: 50};
+		var S_width = 800,S_height = 600;
+
+		var formatNumber = d3.format(",.0f");    // zero decimal places
+    	var	format = function(d) { return formatNumber(d) + " "; };
+    	//var color = d3.scaleOrdinal(d3.schemeCategory20);
+    	var color = d3.scaleOrdinal().domain(['t','e','w','i','c','f'])
+    	                             .range(["#FFD700", "#2ECC71","#4169E1","#984ea3","#ff7f00","#DC143C"]);
+    	
+
+		// Set the sankey diagram properties
+		var sankey = d3.sankey()
+    				.nodeWidth(40)
+    				.nodePadding(40)
+    				.size([S_width, S_height]);
+
+		var path = sankey.link();
+
+		function removeDuplicates(num) {
+    		var x,
+        	len=num.length,
+        	out=[],
+        	obj={};
+                 
+    		for (x=0; x<len; x++) {
+        		obj[num[x]]=0;
+    		}	
+    		for (x in obj) {
+        		out.push(x);
+    		}
+    		return out;
+		}
+
+		function prepareData(data) {
+    		//set up graph objects
+    		graph = {"nodes" : [], "links" : []};
+
+    		data.forEach(function (d) {
+        		graph.nodes.push({ "name": d.source });
+        		graph.nodes.push({ "name": d.target });
+        		graph.links.push({ "source": d.source,
+                           		   "target": d.target,
+                                   "value": d.value });
+    		});
+    		// return only the distinct / unique nodes
+   			nodesArray=[];
+    		graph.nodes.forEach(function(d) {
+        	nodesArray.push(d.name);
+    		});
+
+    		//console.log(nodesArray);
+            
+    		graph.nodes = removeDuplicates(nodesArray);
+    		//console.log(graph.nodes);
+            
+    		// loop through each link replacing the text with its index from node
+    		graph.links.forEach(function (d, i) {
+        	graph.links[i].source = graph.nodes.indexOf(graph.links[i].source);
+        	graph.links[i].target = graph.nodes.indexOf(graph.links[i].target);
+    		});
+
+    		//now loop through each nodes to make nodes an array of objects rather than an array of strings
+    		graph.nodes.forEach(function (d, i) {
+        	graph.nodes[i] = { "name": d };
+    		});
+
+    		return graph;
+		}
+		var datasets = ["teams.csv","companies.csv"];
+		var info = [["East Coast University","West Coast University"],["IT Firm","Consulting Firm","Financial Firm"]];
+		var uni_logos = {"Standford": "https://identity.stanford.edu/overview/images/emblems/ug_s-tree-ex2.png",
+						"UC Berkeley": "http://brand.berkeley.edu/wp-content/uploads/2016/10/ucbseal_139_540.png",
+					    "NYU": "http://www.trybuch.com/5/img/resume/trybuch_resume_nyu.gif",
+						"MIT": "https://upload.wikimedia.org/wikipedia/en/thumb/4/44/MIT_Seal.svg/1028px-MIT_Seal.svg.png",
+						"USC": "https://s-media-cache-ak0.pinimg.com/originals/2c/4d/4c/2c4d4c06b812e89906a59bbdd1f5af44.jpg",
+						"UCLA": "https://d1fy1ym40biffm.cloudfront.net/images/logos/teams/1a19464e009b4e6b5a192f986bb1439411fbbf7476397d23ec0d54cee2df74e1.png",
+						"Cornell": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Cornell_University_seal.svg/2000px-Cornell_University_seal.svg.png",
+						"Columbia": "http://entrepreneurship.columbia.edu/wp-content/uploads/2016/11/Web-CC_crown_darkblue.png",
+					    "Harvard":"https://upload.wikimedia.org/wikipedia/en/thumb/3/3a/Harvard_Wreath_Logo_1.svg/1051px-Harvard_Wreath_Logo_1.svg.png"};
+
+		var com_logos = {"Microsoft": "http://diylogodesigns.com/blog/wp-content/uploads/2016/04/Microsoft-Logo-icon-png-Transparent-Background.png",
+						 "Google": "http://diylogodesigns.com/blog/wp-content/uploads/2016/04/google-logo-icon-PNG-Transparent-Background.png",
+						 "IBM": "http://pngimg.com/uploads/ibm/ibm_PNG19650.png",
+						 "Oracle": "https://americascup-images.s3.amazonaws.com/original/m1451_oracle.png",
+						 "Apple": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1000px-Apple_logo_black.svg.png",
+						 "Facebook": "http://img.clipartall.com/facebook-icon-circle-vector-facebook-logo-512_512.png",
+						 "Mckinsey&Company":"https://ripple.com/wp-content/uploads/2015/10/mckinsey_mark.png",
+						 "Intel": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Intel-logo.svg/2000px-Intel-logo.svg.png",
+						 "Goldman Sachs": "http://www.pngpix.com/wp-content/uploads/2016/07/PNGPIX-COM-Goldman-Sachs-Logo-PNG-Transparent.png",
+						 "Morgan Stanley": "http://yourbestforward.com/wp-content/uploads/2015/12/morganstanley-logo.png",
+						 "Deloitte Consulting": "https://www.obis.ethz.ch/wp-content/uploads/2015/05/Deloitte.png",
+						 "Amazon":"http://www.userlogos.org/files/amazon-logo-png.png?1471465514"};
+			//console.log(logos);
+		var logos = [uni_logos,com_logos];
+
+		// load the data and plot figure
+		var choice = d3.select("#select");
+		choice.on("change", function(){
+			d3.selectAll("#university > *").remove();
+			var index = choice.property("value");
+			//console.log(index);
+			var inputData = datasets[index];
+			var inputLogos = logos[index];
+			showSankey(inputData,inputLogos);
+		})
+
+		// default graph
+		showSankey("teams.csv",logos[0]);
 		
+		function showSankey(inputData, inputLogos){
+			d3.csv(inputData, function(error, data) {
+    
+    		var graph = prepareData(data);
+
+    		sankey.nodes(graph.nodes)
+          		  .links(graph.links)
+          		  .layout(0)
+    		//console.log(graph.links);
+
+
+    		var svg_uni = d3.select("#university");
+    		
+    		// plot the graph
+    		// add in the links
+    		var link = svg_uni.append("g").selectAll(".link")
+                      .data(graph.links)
+                      .enter().append("path")
+                      .attr("class", "link")
+                      .attr("d", path)
+                      .style("stroke-width", function(d) { return Math.max(1, d.dy); })
+                      //.style("display","none")
+                      .attr("transform", "translate("+margin.right + ","+ margin.top+")")
+                      .on("mouseover", function(d){
+                      		d3.select("#title").transition().duration(200).style("opacity", .9);      
+      
+            				d3.select("#title").html(function (){
+            					return "Number of Startups: " + format(d.value);})
+            				  .style("left", (d3.event.pageX) + "px")     
+              	              .style("top", (d3.event.pageY - 28) + "px");
+            		});
+
+            // add link titles **
+            //link.append("title")
+                //.text(function(d) {
+                      // return format(d.value) + " startups with teammembers graduated from " + 
+                          // d.target.name.substring(2); });
+    		// add in the nodes
+    		//var clickTwice = false;
+    		var node = svg_uni.append("g").selectAll(".node")
+                      .data(graph.nodes)
+                      .enter().append("g")
+                      .attr("class", "node")
+                      .attr("transform", function(d) { 
+                            var tran_x = d.x + margin.right;
+                            var tran_y = d.y  + margin.top;
+                            return "translate(" + tran_x + "," + tran_y + ")";
+                        })
+                      //.on("click", function(data){
+                      //        if(clickTwice){
+                                  //var node = d;
+                        //          var showLinks = d3.selectAll(".link").filter(function(d){return d.source==data || d.target==data;});
+                          //        showLinks.style("display", "none");
+                            //      clickTwice = false;
+                              //}else {
+                                  //node = d;
+                                //  showLinks = d3.selectAll(".link").filter(function(d){return d.source==data || d.target==data;});
+                                  //showLinks.style("display", null);
+                                  //clickTwice = true;}
+                      //})
+                      ;
+
+    		// add the rectangles for the nodes
+    		node.append("rect")
+        		.attr("height", function(d) { return d.dy; })
+        		.attr("width", sankey.nodeWidth())
+       			.style("fill",
+       			function(d) { 
+                	return d.color = color(d.name.substring(0,1)); 
+        	}
+        	)
+        		.on("mouseover", function(d) {
+            		d3.select("#title").transition().duration(200).style("opacity", .9);      
+      
+            		d3.select("#title").html(function (){
+              				return  "<span>" + d.name.substring(2).toUpperCase()+ "</span>" + "<br>"+ "Number of Startups: " + d.value;
+              			})  
+              	.style("left", (d3.event.pageX) + "px")     
+              	.style("top", (d3.event.pageY - 28) + "px");
+
+        	});
+
+        	var logo_node = d3.selectAll(".node").filter(function(d) {return d.x == 0;});
+        	//console.log(logo_node);
+        	logo_node.append("image")
+        			 .attr("xlink:href", function(d){return inputLogos[d.name.substring(2)];})
+        			 .attr("width", sankey.nodeWidth())
+        			 .attr("height", 40
+        			 	//function(d) {return d.dy;}
+        			 	)
+        			 .attr("x", -45)
+        			 .attr("y", function(d) {return -d.dy});
+
+        
+
+    		
+
+        	// function for displaying legend
+        	function showLegend(inputInfo) {
+        		//add in color legend for connection nodes
+				var legend = d3.select("#university").append("g").attr("class",".legend");
+					
+					legend.selectAll("rect")
+			  		.data(inputInfo).enter()
+			  		.append("rect")
+			  		.attr("x",function(d,i){
+			  		//return 900 -40-40-140*(inputInfo.length-i-1)
+			  		return 70 + 180*i;})
+			  		.attr("y",20)
+			  		.attr("width",40)
+			  		.attr("height",20)
+			  		.style("fill", function(d){return color(d.substring(0,1).toLowerCase());});
+			  		
+			  		legend.selectAll("text")
+			  		.data(inputInfo).enter()
+			  		.append("text")
+			  		.text(function(d) {return d;})
+			  		.attr("text-anchor", "middle")
+			  		.attr("font-size", 13)
+			  		.attr("y",60)
+			  		.attr("x", function(d,i)
+			  						{//return 900 -60-140*(inputInfo.length-i-1)
+			  						 return 90 + 180*i;});
+        	}
+
+        	//show legend
+        	var index = choice.property("value");
+        	var legendData = info[index];
+        	showLegend(legendData);
+        	
+
+    		// add category labels
+    		var labels = ["Team Source", "Funding Status", "Total Startups"];
+
+    		var label = svg_uni.append("g").selectAll(".label")
+    					.data(labels).enter()
+          				.append("g")
+          				.attr("class", "label")
+                      	.attr("transform", function(d,i) { 
+                            var tran_x = 30 + 380 * i;
+                            return "translate(" + tran_x + "," + "80" + ")";
+                        })
+
+    		label.append("rect")
+          				.attr("width",120)
+          				.attr("height",50)
+          				.attr("rx",10)
+          				.attr("ry",10)
+          				.style("fill-opacity", 0)
+          				.style("stroke", "black")
+          				.style("stroke-width",2);
+          	label.append("text")
+          		 .text(function(d){return d;})
+          		 .attr("y",30)
+        		 .attr("text-anchor", "middle")
+        		 .attr("transform","translate(60,0)");
+    
+            });
+		}
+
+
 		/* BEGIN FIGURE 3 */
+		// scales
+		var employeesScale = d3.scaleSqrt().domain([10, 5000]).range([20, 400]);
+		var companiesScale = d3.scaleLinear().domain([0, 53]).range([0, 1]);
 		
 		var f3 = d3.select("#fig3").attr("width", width).attr("height", height).append("g").attr("transform", "translate(80,0)");
 		
@@ -61,27 +527,57 @@
 			.key(function (d) { return d.Employees; })
 			.entries(rawData);
 			
-			f3.selectAll("circle")
-			.data(companiesBySize)
+			reorderCompanies = [companiesBySize[0],companiesBySize[2],companiesBySize[1],companiesBySize[3],companiesBySize[4],companiesBySize[5]]
+			
+			var circles = f3.selectAll("circle")
+			.data(reorderCompanies)
 			.enter()
 			.append("circle")
 			.attr("cx", widthFloat/2)
 			.attr("cy", height/2)
-			.attr("fill", backgroundColor)
-			.attr("stroke", "steelblue")
+			.attr("stroke","white")
+			.attr("stroke-width","4")
 			.attr("r", function(d) {
 				// employee size
 				return employeesScale(d.key);
 			})
-			.attr("stroke-width", function(d) {
+			.attr("fill", function(d) {
 				// number of companies
-				return companiesScale(d.values.length);
+				return d3.interpolateBlues(companiesScale(d.values.length));
 			})
 			.on("mouseover", showData)
 			.on("mouseout", hideData);
 			
 			var labels = f3.append("g")
-			.attr("transform", "translate("+widthFloat/2+","+height/2+")");
+			.attr("transform", "translate("+widthFloat/2+","+20+")");
+			
+			function sizeExchange(empNumber){
+				var statement = "";
+				switch(empNumber) {
+					case "5000":
+						statement = "1001-5000+";
+						break;
+					case "1000":
+						statement = "501-1000";
+						break;
+					case "500":
+						statement = "201-500";
+						break;
+					case "200":
+						statement = "51-200";
+						break;
+					case "50":
+						statement = "11-50";
+						break;
+					case "10":
+						statement = "1-10";
+						break;
+					default:
+						statement = "No";
+						break;
+				}
+			return statement+" Employees";
+			}
 			
 			function showData(d) {
 				//companies
@@ -97,32 +593,32 @@
 							.text(i)
 							.attr("x", "-60")
 							.attr("y", companies.indexOf(i)*16)
-							.attr("fill", "steelblue")
+							.attr("fill", "#EF626C")
 							.attr("transform", "translate(10,20)");
 						})
 					});
 				//employees
 				labels.append("text")
-				.text(d.key)
+				.text(sizeExchange(d.key))
 				.style("font-size","14")
-				.attr("x", -employeesScale(d.key)+(.1*employeesScale(d.key)))
-				.attr("y", "-2")
-				.attr("fill", "steelblue");
-				//radius
-				labels.append("line")
-				.style("stroke", "steelblue")
-				.attr("x1", -employeesScale(d.key))
-				.attr("y1","0")
-				.attr("x2", "0")
-				.attr("y2", "0");
+				.attr("x", "0")
+				.attr("y", "0")
+				.attr("text-anchor","middle")
+				.attr("fill", "#EF626C");
+				//area
+				d3.select(this)
+				.attr("stroke", "#EF626C");
 			}
-			
 			function hideData(d) {
 				f3.selectAll("text").remove();
 				labels.selectAll("text").remove();
 				labels.selectAll("line").remove();
+				d3.select(this)
+				.attr("stroke","white")
+				.attr("fill", function(d) {
+				return d3.interpolateBlues(companiesScale(d.values.length));
+				});
 			}
-			
 		});
 		
 		

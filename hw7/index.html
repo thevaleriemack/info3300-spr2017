@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Val Mack dgm97 HW7 INFO 5100</title>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+		<style>
+			.grid {
+				width: 1200px;
+				margin: 0px auto;
+			}
+			svg {
+				width: 240px;
+				height: 240px;
+				margin-top: 40px;
+				margin-left: 0px;
+				border: 1px black solid;
+			}
+			.labels p {
+				width: 240px;
+				display: inline-block;
+			}
+			#f9 { width: 960px; height: 480px; margin-top: 40px;}
+		</style>
+	</head>
+	<body>
+		<h1>Val Mack dgm97 HW7 INFO 5100</h1>
+		<div id="p1-r1" class="grid">
+			<svg id="f1"></svg>
+			<svg id="f2"></svg>
+			<svg id="f3"></svg>
+			<svg id="f4"></svg>
+		</div>
+		<div class="grid labels">
+			<p>Figure 1. Sharpness</p>
+			<p>Figure 2. Shape</p>
+			<p>Figure 3. Cast shadow</p>
+			<p>Figure 4. Filled</p>
+		</div>
+		<div id="p1-r2" class="grid">
+			<svg id="f5"></svg>
+			<svg id="f6"></svg>
+			<svg id="f7"></svg>
+			<svg id="f8"></svg>
+		</div>
+		<div class="grid labels">
+			<p>Figure 5. Added surround color</p>
+			<p>Figure 6. Added surround box</p>
+			<p>Figure 7. Misalignment</p>
+			<p>Figure 8. Direction of motion</p>
+		</div>
+		<div id="p2" class="grid">
+			<svg id="f9"></svg>
+		</div>
+		<div>
+			<p>Figure 9. Grey value and Elongation</p>
+			<p>19.06 seconds</p>
+			<p>Was this finding task easy or hard? The task was hard! Were the three categories equally difficult, or were some easier than others? If so, which? The color grayscale difference was easiest, and the grayscale plus elongation was equally easy. The elongation alone was very hard. I could have made the grayscale harder by using grays that were closer in lightness.</p>
+		</div>
+		<script>
+			/* Problem 1 */
+			
+			// The following range function was found on this webpage: http://stackoverflow.com/questions/3895478/does-javascript-have-a-method-like-range-to-generate-an-array-based-on-suppl/31989462#31989462
+			function range(start, end, step, offset) {
+				var len = (Math.abs(end - start) + ((offset || 0) * 2)) / (step || 1) + 1;
+				var direction = start < end ? 1 : -1;
+				var startingPoint = start - (direction * (offset || 0));
+				var stepSize = direction * (step || 1);
+
+				return Array(len).fill(0).map(function(_, index) {
+					return startingPoint + (stepSize * index);
+				});
+			}
+			
+			// The following getRandomIntIncluseive function was found on this webpage: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+			function getRandomIntInclusive(min, max) {
+				min = Math.ceil(min);
+				max = Math.floor(max);
+				return Math.floor(Math.random() * (max - min + 1)) + min;
+			}
+			
+			// positions for items
+			var items = [];
+			for (var row=1; row < 6; row++) {
+					for (var col=1; col < 6; col++){
+						items.push({
+							"x":col*(40+(5*Math.random())),
+							"y":row*(40+(5*Math.random()))
+						})
+					}
+				}
+			
+			/*** figure 1 ***/
+			var f1 = d3.select("#f1")
+			.append('g').attr("transform", "translate(-10,-10)");
+			var t1 = getRandomIntInclusive(0,24);
+			
+			var blurFilter = f1.append("defs")
+			.append("filter")
+			.attr("id", "blurry")
+			.append("feGaussianBlur")
+			.attr("stdDeviation", 2);
+			
+			f1.selectAll("circle")
+			.data(items)
+			.enter()
+			.append("circle")
+			.attr("fill","orchid")
+			.attr("cx", function(d){return d.x;})
+			.attr("cy", function(d){return d.y;})
+			.attr("r", "10")
+			.attr("filter", "url(#blurry)");
+			
+			f1.selectAll('circle').filter(
+				function(d, i) {
+					if (i==t1){
+						return d;
+					}
+				}
+			).attr("filter", "null");
+			
+			/*** figure 2 ***/
+			var f2 = d3.select("#f2")
+			.append('g').attr("transform", "translate(-10,-10)");;
+			var t2 = getRandomIntInclusive(0,24);
+			var f2items = items.slice(0);
+			
+			var outlier = f2items.splice(t2, 1);
+			
+			f2.selectAll("circle")
+			.data(f2items)
+			.enter()
+			.append("circle")
+			.attr("fill","orchid")
+			.attr("cx", function(d){return d.x;})
+			.attr("cy", function(d){return d.y;})
+			.attr("r", "10");
+			
+			f2.selectAll("rect")
+			.data(outlier)
+			.enter()
+			.append("rect")
+			.attr("fill","orchid")
+			.attr("x", function(d){return d.x-10;})
+			.attr("y", function(d){return d.y-10;})
+			.attr("width", "20")
+			.attr("height", "20");
+			
+			/*** figure 3 ***/
+			var f3 = d3.select("#f3")
+			.append('g').attr("transform", "translate(-10,-10)");;
+			var t3 = getRandomIntInclusive(0,24);
+			
+			var dropShadowFilter = f3.append("defs")
+			.append("filter")
+			.attr("id", "drop")
+			.attr("height", "150%")
+			.attr("width", "150%");
+			dropShadowFilter.append("feGaussianBlur")
+			.attr("in", "SourceAlpha")
+			.attr("stdDeviation", 2)
+			.attr("result", "blur");
+			dropShadowFilter.append("feOffset")
+			.attr("in", "blur")
+			.attr("dx", 5)
+			.attr("dy", 5)
+			.attr("result", "offsetBlur");
+			dropShadowFilter.append("feFlood")
+			.attr("in", "offsetBlur")
+			.attr("flood-opacity", "0.2")
+			.attr("result", "offsetColor");
+			dropShadowFilter.append("feComposite")
+			.attr("in", "offsetColor")
+			.attr("in2", "offsetBlur")
+			.attr("operator", "in")
+			.attr("result", "offsetBlur");
+			
+			var feMerge = dropShadowFilter.append("feMerge");
+			feMerge.append("feMergeNode")
+    	.attr("in", "offsetBlur");
+			feMerge.append("feMergeNode")
+			.attr("in", "SourceGraphic");
+			
+			f3.selectAll("ellipse")
+			.data(items)
+			.enter()
+			.append("ellipse")
+			.attr("fill","orchid")
+			.attr("cx", function(d){return d.x;})
+			.attr("cy", function(d){return d.y;})
+			.attr("rx", function(){return 10+(3*Math.random())})
+			.attr("ry", function(){return 10+(3*Math.random())});
+			
+			f3.selectAll('ellipse').filter(
+				function(d, i) {
+					if (i==t3){
+						return d;
+					}
+				}
+			).attr("filter", "url(#drop)");
+			
+			/*** figure 4 ***/
+			var f4 = d3.select("#f4")
+			.append('g').attr("transform", "translate(-10,-10)");;
+			var t4 = getRandomIntInclusive(0,24);
+			var f4items = items.slice(0);
+			
+			var outlier4 = f4items.splice(t4, 1);
+			
+			f4.selectAll("circle")
+			.data(f4items)
+			.enter()
+			.append("circle")
+			.attr("fill","none")
+			.attr("stroke","orchid")
+			.attr("stroke-width", "4")
+			.attr("cx", function(d){return d.x;})
+			.attr("cy", function(d){return d.y;})
+			.attr("r", "10");
+			
+			f4.append("circle")
+			.attr("fill","orchid")
+			.attr("stroke","none")
+			.attr("cx", outlier4[0].x)
+			.attr("cy", outlier4[0].y)
+			.attr("r", "10");
+			
+			// reposition items
+			var items2 = [];
+			for (var row=1; row < 6; row++) {
+					for (var col=1; col < 6; col++){
+						items2.push({
+							"x":col*(40),
+							"y":row*(40)
+						})
+					}
+				}
+			
+			/*** figure 5 ***/
+			var f5 = d3.select("#f5")
+			.append("g")
+			.attr("transform","translate(-15)");
+			var t5 = getRandomIntInclusive(0,24);
+			
+			f5.append("rect")
+			.attr("fill","gold")
+			.attr("x", function(d){return items2[t5].x-5;})
+			.attr("y", function(d){return items2[t5].y-10;})
+			.attr("width", "40")
+			.attr("height", "20");
+			
+			f5.selectAll("line")
+			.data(items2)
+			.enter()
+			.append("line")
+			.attr("stroke","orchid")
+			.attr("stroke-width", "3")
+			.attr("x1", function(d) {return d.x;})
+			.attr("y1", function(d) {return d.y;})
+			.attr("x2", function(d) {return d.x+30;})
+			.attr("y2", function(d) {return d.y;});
+			
+			/*** figure 6 ***/
+			var f6 = d3.select("#f6")
+			.append("g")
+			.attr("transform","translate(-15)");
+			var t6 = getRandomIntInclusive(0,24);
+			
+			f6.append("rect")
+			.attr("fill", "none")
+			.attr("stroke","gold")
+			.attr("stroke-width", "2")
+			.attr("x", function(d){return items2[t6].x-5;})
+			.attr("y", function(d){return items2[t6].y-10;})
+			.attr("width", "40")
+			.attr("height", "20");
+			
+			f6.selectAll("line") 
+			.data(items2)
+			.enter()
+			.append("line")
+			.attr("stroke","orchid")
+			.attr("stroke-width", "3")
+			.attr("x1", function(d) {return d.x;})
+			.attr("y1", function(d) {return d.y;})
+			.attr("x2", function(d) {return d.x+30;})
+			.attr("y2", function(d) {return d.y;});
+			
+			/*** figure 7 ***/
+			var f7 = d3.select("#f7")
+			.append("g")
+			.attr("transform","translate(-15)");
+			var t7 = getRandomIntInclusive(0,24);
+			
+			f7.selectAll("line") 
+			.data(items2)
+			.enter()
+			.append("line")
+			.attr("stroke","orchid")
+			.attr("stroke-width", "3")
+			.attr("x1", function(d) {return d.x;})
+			.attr("y1", function(d) {return d.y;})
+			.attr("x2", function(d) {return d.x+30;})
+			.attr("y2", function(d) {return d.y;});
+			
+			f7.selectAll('line').filter(
+				function(d, i) {
+					if (i==t7){
+						return d;
+					}
+				}
+			).attr("transform", "translate(0,10)");
+			
+			/*** figure 8 ***/
+			var f8 = d3.select("#f8");
+			var t8 = getRandomIntInclusive(0,24);
+			
+			var f8items = items2.slice(0);
+			var outlier8 = f8items.splice(t8, 1);
+			
+			function circleTransition() { 
+
+			var movingCircles = f8.selectAll("cirle")
+			.data(f8items)
+			.enter()
+			.append("circle")
+			.attr("fill","orchid")
+			.attr("r", "2");
+			
+			var o8 = f8.append("circle")
+			.attr("fill","orchid")
+			.attr("r", "2");
+			
+			repeat();
+
+			function repeat() {
+				movingCircles.attr("cx", function(d) {return d.x;})
+				.attr("cy", function(d) {return d.y;})
+				.transition()  
+				.duration(200)
+				.attr("cy", function(d){
+					return d.y+5;
+				})
+				.transition()  
+				.duration(200)
+				.attr("cy", function(d){
+					return d.y;
+				})
+				.on("end", repeat);
+				
+				o8.attr("cx", function() {return outlier8[0].x;})
+				.attr("cy", function() {return outlier8[0].y;})
+				.transition()  
+				.duration(200)
+				.attr("cx", function(){
+					return outlier8[0].x+5;
+				})
+				.transition()  
+				.duration(200)
+				.attr("cx", function(){
+					return outlier8[0].x;
+				})
+				.on("end", repeat);
+			}
+		}
+
+	circleTransition();
+			
+			/* Problem 2 */
+			
+			// positions for items
+			var shapes = [];
+			for (var row=1; row < 14; row++) {
+					for (var col=1; col < 14; col++){
+						shapes.push({
+							"x":col*68,
+							"y":row*34
+						})
+					}
+				}
+			
+			var first5 = [];
+			var second5 = [];
+			var third5 = [];
+			for (var i = 0; i < 5; i++) {
+				first5.push(
+					shapes.splice(getRandomIntInclusive(0,shapes.length),1)[0]
+				);
+				second5.push(
+					shapes.splice(getRandomIntInclusive(0,shapes.length),1)[0]
+				);
+				third5.push(
+					shapes.splice(getRandomIntInclusive(0,shapes.length),1)[0]
+				);
+			}
+			
+			var f9 = d3.select("#f9");
+			f9.selectAll("ellipse")
+			.data(shapes)
+			.enter()
+			.append("ellipse")
+			.attr("fill","#eeeeee")
+			.attr("cx", function(d){return d.x;})
+			.attr("cy", function(d){return d.y;})
+			.attr("rx", "10")
+			.attr("ry", "10");
+			
+			f9.style("background-color","#cccccc");
+			
+			first5.forEach(function(r) {
+				f9.append("ellipse")
+				.attr("fill","#eeeeee")
+				.attr("cx", r.x)
+				.attr("cy", r.y)
+				.attr("rx", function(){return 10+(5*Math.random())})
+				.attr("ry", function(){return 10+(5*Math.random())});
+			});
+			
+			second5.forEach(function(r) {
+				f9.append("ellipse")
+				.attr("fill","#bbbbbb")
+				.attr("cx", r.x)
+				.attr("cy", r.y)
+				.attr("rx", "10")
+				.attr("ry", "10");
+			});
+			
+			third5.forEach(function(r) {
+				f9.append("ellipse")
+				.attr("fill","#bbbbbb")
+				.attr("cx", r.x)
+				.attr("cy", r.y)
+				.attr("rx", function(){return 10+(5*Math.random())})
+				.attr("ry", function(){return 10+(5*Math.random())});
+			});
+
+			
+		</script>
+	</body>
+</html>

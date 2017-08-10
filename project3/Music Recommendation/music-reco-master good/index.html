@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+		<title>Music Recommendation</title>
+		<meta name="description" content="Music Recommendation Service" />
+		<meta name="author" content="Muhammad Umair" />
+		<link rel="stylesheet" type="text/css" href="css/default.css" />
+		<link rel="stylesheet" type="text/css" href="css/component.css" />
+		<script src="js/modernizr.custom.js"></script>
+		<script type="text/javascript" src="js/lib/jquery/jquery-1.8.3.js"></script>
+        <script type="text/javascript" src="js/lib/lastfm/lastfm.api.md5.js"></script>
+        <script type="text/javascript" src="js/lib/lastfm/lastfm.api.cache.js"></script>
+        <script type="text/javascript" src="js/lib/lastfm/lastfm.api.js"></script>
+        <script src="https://connect.soundcloud.com/sdk/sdk-3.0.0.js"></script>
+
+        <style type="text/css" media="screen">
+        body { background-image: url("img/back2.jpg");
+    		}
+    	</style>
+
+<script>
+SC.initialize({
+  client_id: 'c7c2135565abad2719df3f5c438625ae'
+});
+
+// permalink to a track
+var track_url = 'http://soundcloud.com/forss/voca-nomen-tuum';
+
+var getComments = function (track) {
+  return SC.get('/tracks/' + track.id + '/comments');
+};
+
+var listComments = function (comments) {
+  comments.forEach(function(comment){
+    console.log(comment.body);
+  });
+};
+
+SC.resolve(track_url).then(getComments).then(listComments);
+</script>
+	</head>
+	<body>
+		<div class="container">
+			<!-- Top Navigation -->
+			<header>
+				<h1>Reko Music<span>Disovering new music is just a click away</span></h1>
+			</header>
+			<div class="main clearfix">
+				<!-- Optional columns for small components -->
+				<div class="column">
+					<p>Enter artist name in the search box and start discovering new music</p>
+				</div>
+				<div class="column">
+					<div id="sb-search" class="sb-search">
+						<form id="frm1">
+							<input class="sb-search-input" placeholder="Enter artist name..." type="text" value="" name="search" id="search">
+							<input class="sb-search-submit" type="submit" value="" onclick="myFunction()">
+							<span class="sb-icon-search" onclick="myFunction()"></span>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div><!-- /container -->
+		<script src="js/classie.js"></script>
+		<script src="js/uisearch.js"></script>
+		<script>
+			//new UISearch( document.getElementById('sb-search'));
+			//document.getElementById("frm1").submit();			//sessionStorage['artist'] = data2.user_name;
+
+			function myFunction() {
+			    var x=document.getElementById("frm1").elements[0].value;
+			    //text += x.elements[i].value
+			    //alert("Value is "+x);
+			    sessionStorage['artist'] = x;
+			    if (x!=""){
+			    window.open("reco.html");
+				}
+			    //window.open('reco.html', '_self');
+			}
+</script>
+
+
+
+
+
+
+
+
+	</body>
+</html>

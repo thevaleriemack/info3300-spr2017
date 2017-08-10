@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reco Music</title>
+    <script type="text/javascript" src="js/vivagraph.js"></script>
+
+    <!--
+    This example uses jQuery, but it's only for convenience of listenting
+    to DOM events. The jQuery can be replaced with your favorite library.
+     -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+    <script type="text/javascript" src="js/lib/lastfm/lastfm.api.md5.js"></script>
+    <script type="text/javascript" src="js/lib/lastfm/lastfm.api.cache.js"></script>
+    <script type="text/javascript" src="js/lib/lastfm/lastfm.api.js"></script>
+
+    <script src="https://connect.soundcloud.com/sdk/sdk-3.0.0.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.0.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+
+
+    <script type="text/javascript">
+
+
+        function main () {     //Main fun which is being called on Load
+
+
+          var initArtist = sessionStorage['artist'];           	// the arist name comes here which was typed on the index.html page
+
+          var cache = new LastFMCache();					 	// cache for last fm
+      // Create a LastFM object
+          var lastfm = new LastFM({
+              apiKey    : '988765ec6a884269de6a5de9635c092b',	// last fm api keys
+              apiSecret : '12f8b30f95f7cbedf7c0c3b566db7765',
+              cache     : cache
+          });
+
+            													// create a basic structure of a graph:
+            var graph = Viva.Graph.graph();						
+            //getTopArtists('Believe','Cher', 10);
+            getArtistTrack(initArtist,10);						// fun for calling last fm api to get 10 tracks whose artist is initArtist
+
+            //////////////////////////////////////
+
+            var clickedNode=0;									// flags
+            var flag=0;
+
+            ///////////////////////////////////////
+
+            function getTopArtists(track, artist, limit) {		//this func gets similar tracks for the user. its calling last fm api it gives three parameters as shown, 
+                      // Get the similar tracks for this user
+                              lastfm.track.getSimilar({
+                                  track: track,
+                                  artist: artist,
+                                  limit: limit
+                              },
+                              {
+                                  success: function(data) {
+
+                                      console.log(data.similartracks.track.length);
+                                      for (var i = 0; i < data.similartracks.track.length; i++) {   // trasnversing XML file to get track id, image, name,arist and match number
+                                              graph.addNode(data.similartracks.track[i].mbid, {name:data.similartracks.track[i].name, img:data.similartracks.track[i].image[3]["#text"], rel:data.similartracks.track[i].match, artist:data.similartracks.track[i].artist.name});
+
+                                              //if (i!=0){
+                                                graph.addLink(clickedNode,data.similartracks.track[i].mbid,{connectionStrength:data.similartracks.track[i].match});   // creating a link between two nodes
+                                                				//connection strength depends on match, more match means, lesser the length of link created b/w two nodes
+                                              //}
+                                      }
+
+                                        
+
+                                       //var graph = Viva.Graph.graph();
+                                        //graph.addNode('manunt', {
+                                        //url: 'https://secure.gravatar.com/avatar/c81bfc2cf23958504617dd4fada3afa8'
+                                        //});
+
+                                      //return graph;
+                                      //jQuery(list + '</ol>').appendTo('#topartists');
+                                  },
+                                  error: function(data) {
+                                      // Show error message.
+                                      alert(data.error + " " + data.message);
+                                  }
+                              });
+                          }
+
+
+
+
+          function getArtistTrack(artist, limit) {					//
+                              // Get the top tracks for this user
+                              lastfm.artist.getTopTracks({
+                                  artist: artist,
+                                  limit: limit
+                              },
+                              {
+                                  success: function(data) {    // trasnversing XML file to get track name, image etc.
+                                      // Create HTML to append to the #topartists element :
+                                      //console.log(data.toptracks.track.length);
+                                      for (var i = 0; i < data.toptracks.track.length; i++) {
+
+                                           graph.addNode(data.toptracks.track[i].name, {name:data.toptracks.track[i].name, img:data.toptracks.track[i].image[3]["#text"], rel:'', artist:data.toptracks.track[i].artist.name});
+
+                                           if(i>0){
+                                           graph.addLink(data.toptracks.track[i].name,data.toptracks.track[i-1].name,{connectionStrength:'3'});
+                                          }else{
+                                          	fetch_songs(data.toptracks.track[0].name,initArtist);
+                                          }
+
+                                      }
+                                  },
+                                  error: function(data) {
+                                      // Show error message.
+                                      alert(data.error + " " + data.message);
+                                  }
+                              });
+                          }
+
+            
+
+            var graphics = Viva.Graph.View.svgGraphics(),
+                nodeSize = 80;   // size of a  node
+
+            // Since we are using SVG we can easily subscribe to any supported
+            // events (http://www.w3.org/TR/SVG/interact.html#SVGEvents ),
+            // including mouse events:
+
+            var idealLength = 200;  // recommended 300                 //this varies the length of a link.
+              var layout = Viva.Graph.Layout.forceDirected(graph, {
+                  springLength: idealLength,
+                  springCoeff : 0.00008,
+                  dragCoeff : 0.02,									//here link attributes are defined
+                  gravity : -100,
+                  springTransform: function (link, spring) {
+                    spring.length = idealLength * (1 - link.data.connectionStrength);
+                  }
+              });
+
+
+
+            graphics.node(function(node) {          //creation of a node
+                var ui = Viva.Graph.svg('g'),
+                      svgText = Viva.Graph.svg('text')
+                      .attr('x', '40px')
+                      .attr('y', '120px')
+                      .attr('style','fill: #464141;  font-size: 20px; text-anchor: middle; stroke-width:2')
+                      .text(node.data.name),       //appending node name
+
+                      
+                      svgText2 = Viva.Graph.svg('text')
+                      .attr('x', '40px')
+                      .attr('y', '100px')
+                      .attr('style','fill: #464141; font-size: 20px; text-anchor: middle; stroke-width:2')
+                      .text(node.data.rel),  //appending node match value
+                      
+                      svgText3 = Viva.Graph.svg('text')
+                      .attr('x', '40px')
+                      .attr('y', '140px')
+                      .attr('style','fill: #ff8800; font-size: 20px; text-anchor: middle; stroke-width:2')
+                      .text(node.data.artist),  //appending artist name
+                      
+                      img = Viva.Graph.svg('image')
+                      .attr('width', nodeSize)
+                      .attr('height', nodeSize)
+                      .attr('x', 0)
+                      .attr('y', 0)
+                      .attr('preserveAspectRatio','xMidYMid slice')
+                      .link(node.data.img),   //appending image
+                      
+                      rct = Viva.Graph.svg('rect')
+                      .attr('width', nodeSize)
+                      .attr('height', nodeSize)
+                      .attr('x', 0)
+                      .attr('y', 0)
+                      .attr('rx', 2)
+                      .attr('ry', 2)
+                      .attr('style', 'fill:none; stroke:#464141; stroke-width:1');  //creating rectavle
+                      
+                      //patt.append(svgCirc);
+                      ui.append(img);
+                      ui.append(rct);
+                      ui.append(svgText3);
+                      ui.append(svgText2);
+                      ui.append(svgText);
+                      
+                      $(img).on({ 'mousedown' : function(){
+                                 //console.log(node.id);
+                                // if(node.id != userid){
+                                //     main(node.id);
+                                //clickedTrackID = node.id;  
+                                flag=0;
+                                //clickedNode=node.id;
+                                //getTopArtists(node.data.name,node.data.artist,5);
+                                //alert("hello");                            
+                                // }
+                                }
+                            });
+
+                      $(img).on({ 'mousemove' : function(){
+                                flag = 1;
+                                }
+                            });
+
+                      $(img).on({ 'mouseup' : function(){   // node clicked
+                                if(flag === 0){
+                                fetch_songs(node.data.name,node.data.artist);
+							    clickedNode=node.id;
+                                getTopArtists(node.data.name,node.data.artist,10);
+							    }
+							    else if(flag === 1){      //node dragged
+							    }
+                                }
+                            });
+
+
+                      
+                      return ui;
+            });
+
+
+        graphics.placeNode(function(nodeUI, pos) {        // node creation position defined here
+                           nodeUI.attr('transform',
+                                       'translate(' +
+                                       (pos.x - nodeSize/2) + ',' + (pos.y - nodeSize/2) + ')');
+                           });
+
+      
+        graphics.link(function(link){                     // link creation here (to and from positions)
+                      return Viva.Graph.svg('path')
+                      .attr('stroke', '#464141');
+                      }).placeLink(function(linkUI, fromPos, toPos) {
+                                   // linkUI - is the object returend from link() callback above.
+                                   var data = 'M' + fromPos.x + ',' + fromPos.y +
+                                   'L' + toPos.x + ',' + toPos.y;
+                                   
+                                   linkUI.attr("d", data);
+                                   
+                                   });
+
+
+            // Finally render the graph with our customized graphics object:
+            var renderer = Viva.Graph.View.renderer(graph, {
+                    layout : layout,
+                    graphics : graphics
+                });
+            renderer.run();
+
+
+         }
+    </script>
+
+
+
+    <script type="text/javascript">
+      var url;
+      var songs;
+
+
+      function fetch_songs(gana,singer){
+      SC.initialize({
+        client_id: 'c7c2135565abad2719df3f5c438625ae'       //soundcloud client id
+      });
+
+      SC.get('/tracks', {
+        q: gana+" "+singer
+      }).then(function(tracks) {		//feteching songs from soundcloud
+        songs=tracks;
+        //alert(""+gana+" "+singer);
+        play_track();    //calling play track fun to play the first track recieved
+
+        //var length= $("#mylistgroup").size();
+        //alert("length"+length);
+
+        //var countRows = $('#mylistgroup').size();
+
+
+        //for (i = 0; i < 2; i++) {
+        //$("#mylistgroup").append('<button class="list-group-item" onclick="play_track('+i+')" id="track'+i+'">'+tracks[i].title+'</button>');
+    //}
+
+
+
+  //    $("#delete_row").click(function(){
+  //   	 if(i>1){
+		//  $("#addr"+(i-1)).html('');
+		//  i--;
+		//  }
+	 // });
+
+      });
+    }
+
+      function play_track(){
+        url=songs[0].permalink_url;  //playing the first track
+        SC.oEmbed(url, {
+          auto_play: true,
+          element: result
+        });
+      }
+    </script>
+
+    <style type="text/css" media="screen">
+        html, body, svg { width: 100%; height: 100%;}
+    </style>
+
+    <style media="screen">
+      /*body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: sans-serif;
+        float: right;
+        max-width: 100%
+      }*/
+      #result {
+        width: 100%;
+        margin-bottom: 5px;
+        margin-top: 0;
+        border-color: #ff8800;
+        border-style:solid;
+        border-width:3px;
+        
+      }
+      /*.list-group {
+        width: 100%;
+        max-height: 200px;
+     
+        overflow: hidden;
+        overflow-y: auto;
+
+        border-color: #ff8800;
+        border-style:solid;
+        border-width:3px;
+      }*/
+    </style>
+</head>
+  <body onload="main()">
+    
+    <!-- <div class="row"> -->
+        <!-- <div class="col-md-12"> -->
+          <div id="result"></div>
+       <!--  </div> -->
+        <!-- <div class="col-md-12"> -->
+         <!--  <div class="list-group scroll-list" id="mylistgroup">
+          	
+          </div> -->
+        <!-- </div> -->
+    <!-- </div> -->
+
+
+  </body>
+
+
+
+</html>

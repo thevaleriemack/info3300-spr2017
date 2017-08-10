@@ -151,7 +151,11 @@ function getBits(a) {
 	return randomVectors.map(function (r) {
 		// Change this to the appropriate 
 		//  "classification" for vector a.
+    if (innerProduct(r, a) > 0.0) {
 		return 1;
+	} else {
+		return 0;
+	}
 	});
 }
 
@@ -175,9 +179,12 @@ function approximateCosine(a, b) {
 	}
 	
 	return Math.cos(Math.PI * differentSign / randomVectors.length);
+    // avoid special functions when you want things to be fast
 }
 
 function innerProduct(x, y) {
+    // this works as long as the two vectors have length 1
+    // easier way to use cosine without special functions from Math
 	if (x.length != y.length) { console.log("vectors are not the same length"); }
 	var sum = 0.0;
 	for (var i = 0; i < x.length; i++) {

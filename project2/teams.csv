@@ -1,0 +1,91 @@
+source,target,value
+t_less than 10M,t_total,28971
+t_10M to 20M,t_total,3213
+t_20M to 30M,t_total,1508
+t_30M to 40M,t_total,1340
+t_40M to 50M,t_total,552
+t_50M to 60M,t_total,552
+t_60M to 72M,t_total,452
+t_83M to 100M,t_total,414
+t_72M to 83M,t_total,331
+w_Standford,t_less than 10M,1194
+w_UC Berkeley,t_less than 10M,1163
+e_NYU,t_less than 10M,759
+e_MIT,t_less than 10M,665
+w_USC,t_less than 10M,643
+w_UCLA,t_less than 10M,620
+e_Cornell,t_less than 10M,615
+e_Columbia,t_less than 10M,637
+e_Harvard,t_less than 10M,534
+e_Cornell,t_10M to 20M,180
+e_Columbia,t_10M to 20M,133
+e_Harvard,t_10M to 20M,10
+e_MIT,t_10M to 20M,179
+e_NYU,t_10M to 20M,181
+w_UC Berkeley,t_10M to 20M,335
+w_USC,t_10M to 20M,200
+w_UCLA,t_10M to 20M,164
+w_Standford,t_10M to 20M,352
+e_Cornell,t_20M to 30M,88
+e_Columbia,t_20M to 30M,80
+e_Harvard,t_20M to 30M,80
+e_MIT,t_20M to 30M,99
+e_NYU,t_20M to 30M,84
+w_UC Berkeley,t_20M to 30M,188
+w_USC,t_20M to 30M,97
+w_UCLA,t_20M to 30M,90
+w_Standford,t_20M to 30M,189
+e_Cornell,t_30M to 40M,100
+e_Columbia,t_30M to 40M,100
+e_Harvard,t_30M to 40M,86
+e_MIT,t_30M to 40M,115
+e_NYU,t_30M to 40M,94
+w_UC Berkeley,t_30M to 40M,198
+w_USC,t_30M to 40M,109
+w_UCLA,t_30M to 40M,85
+w_Standford,t_30M to 40M,208
+e_Cornell,t_40M to 50M,47
+e_Columbia,t_40M to 50M,33
+e_Harvard,t_40M to 50M,38
+e_MIT,t_40M to 50M,53
+e_NYU,t_40M to 50M,34
+w_UC Berkeley,t_40M to 50M,99
+w_USC,t_40M to 50M,35
+w_UCLA,t_40M to 50M,50
+w_Standford,t_40M to 50M,74
+e_Cornell,t_50M to 60M,46
+e_Columbia,t_50M to 60M,37
+e_Harvard,t_50M to 60M,38
+e_MIT,t_50M to 60M,46
+e_NYU,t_50M to 60M,45
+w_UC Berkeley,t_50M to 60M,90
+w_USC,t_50M to 60M,44
+w_UCLA,t_50M to 60M,40
+w_Standford,t_50M to 60M,88
+e_Cornell,t_60M to 72M,52
+e_Columbia,t_60M to 72M,40
+e_Harvard,t_60M to 72M,42
+e_MIT,t_60M to 72M,52
+e_NYU,t_60M to 72M,37
+w_UC Berkeley,t_60M to 72M,88
+w_USC,t_60M to 72M,65
+w_UCLA,t_60M to 72M,41
+w_Standford,t_60M to 72M,96
+e_Cornell,t_72M to 83M,28
+e_Harvard,t_72M to 83M,23
+e_MIT,t_72M to 83M,27
+e_NYU,t_72M to 83M,27
+e_Columbia,t_72M to 83M,19
+w_UC Berkeley,t_72M to 83M,56
+w_USC,t_72M to 83M,32
+w_UCLA,t_72M to 83M,26
+w_Standford,t_72M to 83M,58
+e_Cornell,t_83M to 100M,40
+e_Columbia,t_83M to 100M,34
+e_Harvard,t_83M to 100M,38
+e_MIT,t_83M to 100M,47
+e_NYU,t_83M to 100M,44
+w_UC Berkeley,t_83M to 100M,63
+w_USC,t_83M to 100M,40
+w_UCLA,t_83M to 100M,35
+w_Standford,t_83M to 100M,85
